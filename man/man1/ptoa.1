@@ -1,0 +1,48 @@
+.\"/*******************************************************************************/
+.\"/*                                                                             */
+.\"/*  Copyright 2004-2017 Pascal Gloor                                                */
+.\"/*                                                                             */
+.\"/*  Licensed under the Apache License, Version 2.0 (the "License");            */
+.\"/*  you may not use this file except in compliance with the License.           */
+.\"/*  You may obtain a copy of the License at                                    */
+.\"/*                                                                             */
+.\"/*     http://www.apache.org/licenses/LICENSE-2.0                              */
+.\"/*                                                                             */
+.\"/*  Unless required by applicable law or agreed to in writing, software        */
+.\"/*  distributed under the License is distributed on an "AS IS" BASIS,          */
+.\"/*  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.   */
+.\"/*  See the License for the specific language governing permissions and        */
+.\"/*  limitations under the License.                                             */
+.\"/*                                                                             */
+.\"/*******************************************************************************/
+.Dd Aug 8, 2004
+.Dt PTOA 1
+.Os
+.Sh NAME
+.Nm ptoa
+.Xr piranha 1
+.Nd dump file decoder
+.Sh SYNOPSIS
+.Nm
+.Op Fl m H j
+.Op Ar dump file
+.Sh DESCRIPTION
+The
+.Nm
+daemon collects bgp updates from neighbors and dump them into files.
+.Pp
+The following options are available:
+.Bl -tag -width indent
+.It Fl m
+Machine readable output.
+.It Fl H
+Human readable output.
+.It Fl j
+JSON.
+.It Ar dump file
+.Xr piranha 1
+dump file.
+.Sh SEE ALSO
+.Xr piranha 1
+.Xr piranhactl 1
+.Xr piranha.conf 5

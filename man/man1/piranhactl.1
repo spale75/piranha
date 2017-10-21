@@ -1,0 +1,52 @@
+.\"/*******************************************************************************/
+.\"/*                                                                             */
+.\"/*  Copyright 2004-2017 Pascal Gloor                                                */
+.\"/*                                                                             */
+.\"/*  Licensed under the Apache License, Version 2.0 (the "License");            */
+.\"/*  you may not use this file except in compliance with the License.           */
+.\"/*  You may obtain a copy of the License at                                    */
+.\"/*                                                                             */
+.\"/*     http://www.apache.org/licenses/LICENSE-2.0                              */
+.\"/*                                                                             */
+.\"/*  Unless required by applicable law or agreed to in writing, software        */
+.\"/*  distributed under the License is distributed on an "AS IS" BASIS,          */
+.\"/*  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.   */
+.\"/*  See the License for the specific language governing permissions and        */
+.\"/*  limitations under the License.                                             */
+.\"/*                                                                             */
+.\"/*******************************************************************************/
+.Dd Aug 8, 2004
+.Dt PIRANHACTL 1
+.Os
+.Sh NAME
+.Nm piranhactl
+.Xr piranha 1
+.Nd process control
+.Sh SYNOPSIS
+.Nm
+.Op Ar start stop reload restart status
+.Sh DESCRIPTION
+The
+.Nm
+script allows control of the
+.Xr piranha 1
+daemon.
+.Pp
+The following options are available:
+.Bl -tag -width indent
+.It Ar start
+starts the daemon.
+.It Ar stop
+stops the daemon.
+.It Ar restart
+stops and starts the daemon.
+.It Ar reload
+reloads the daemon configuration. equivalent to
+.Xr kill 1
+-HUP
+.It Ar status
+shows neighbors status
+.Sh SEE ALSO
+.Xr piranha 1
+.Xr piranhactl 1
+.Xr piranha.conf 5

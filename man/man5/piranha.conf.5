@@ -1,0 +1,49 @@
+.\"/*******************************************************************************/
+.\"/*                                                                             */
+.\"/*  Copyright 2004-2017 Pascal Gloor                                                */
+.\"/*                                                                             */
+.\"/*  Licensed under the Apache License, Version 2.0 (the "License");            */
+.\"/*  you may not use this file except in compliance with the License.           */
+.\"/*  You may obtain a copy of the License at                                    */
+.\"/*                                                                             */
+.\"/*     http://www.apache.org/licenses/LICENSE-2.0                              */
+.\"/*                                                                             */
+.\"/*  Unless required by applicable law or agreed to in writing, software        */
+.\"/*  distributed under the License is distributed on an "AS IS" BASIS,          */
+.\"/*  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.   */
+.\"/*  See the License for the specific language governing permissions and        */
+.\"/*  limitations under the License.                                             */
+.\"/*                                                                             */
+.\"/*******************************************************************************/
+.Dd Aug 8, 2004
+.Dt PIRANHA.CONF 5
+.Os
+.Sh NAME
+.Nm piranha.conf
+.Xr piranha 1
+.Nd configuration file
+.Sh DESCRIPTION
+.Bl -tag -width indent
+.It Ar local_as <local-as>
+Local AS number (MANDATORY, no default value).
+.It Ar local_port4 <local-port4>
+Local port. Its not recommended to change it as some daemons do not support to specify the remote port (OPTIONAL, default 179).
+.It Ar local_port6 <local-port6>
+Local port. Its not recommended to change it as some daemons do not support to specify the remote port (OPTIONAL, default 179).
+.It Ar local_ip4 <local-ip4>
+Local IPv4 to listen to.
+.It Ar local_ip6 <local-ip6>
+Local IPv6 to listen to.
+.It Ar export [origin|aspath|community|extcommunity]
+Choose which attributes to export.
+.It Ar bgp_router_id <ipv4_address>
+BGP Router identifier, (MANDATORY, no default value, may NOT be 0.0.0.0).
+.It Ar neighbor <(ipv4|ipv6)_address> <remote-as> [password]
+Defines a BGP peer/neighbor. You may add as many as you want. The unique identifier is the ip address (OPTIONAL, no default value).
+.It Ar user <username>
+An unpriviledged user.
+.Pp
+.Sh SEE ALSO
+.Xr piranha 1
+.Xr piranhactl 1
+.Xr ptoa 1

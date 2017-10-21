@@ -1,0 +1,46 @@
+.\"/*******************************************************************************/
+.\"/*                                                                             */
+.\"/*  Copyright 2004-2017 Pascal Gloor                                                */
+.\"/*                                                                             */
+.\"/*  Licensed under the Apache License, Version 2.0 (the "License");            */
+.\"/*  you may not use this file except in compliance with the License.           */
+.\"/*  You may obtain a copy of the License at                                    */
+.\"/*                                                                             */
+.\"/*     http://www.apache.org/licenses/LICENSE-2.0                              */
+.\"/*                                                                             */
+.\"/*  Unless required by applicable law or agreed to in writing, software        */
+.\"/*  distributed under the License is distributed on an "AS IS" BASIS,          */
+.\"/*  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.   */
+.\"/*  See the License for the specific language governing permissions and        */
+.\"/*  limitations under the License.                                             */
+.\"/*                                                                             */
+.\"/*******************************************************************************/
+.Dd Aug 8, 2004
+.Dt PIRANHA 1
+.Os
+.Sh NAME
+.Nm piranha
+.Nd BGP Route Collector Daemon
+.Sh SYNOPSIS
+.Nm
+.Op Ar configuration file
+.Sh DESCRIPTION
+The
+.Nm
+daemon collects bgp updates from neighbors and dump them into files.
+.Pp
+.Sh SEE ALSO
+.Xr ptoa 1
+.Xr piranhactl 1
+.Xr piranha.conf 5
+.Sh STANDARDS
+The
+.Nm
+daemon is expected to be compliant to:
+RFC1997(BGP Communities Attribute),
+RFC4360(BGP Extended Communities Attribute),
+RFC4760(Multiprotocol Extensions for BGP-4),
+RFC4271(A Border Gateway Protocol 4 (BGP-4),
+RFC5425(The TCP Authentication Option),
+RFC5492(Capabilities Advertisement with BGP-4),
+RFC6793(BGP Support for Four-Octet Autonomous System (AS) Number Space),
