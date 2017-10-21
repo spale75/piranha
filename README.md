@@ -12,8 +12,8 @@ Piranha supports:
 
 ## Installation
 
-1. Download the latest version at http://xxx
-```user@piranha$ wget http://xxx```
+1. Download the latest version at https://github.com/spale75/piranha/archive/piranha-1.1.0.tar.gz
+```user@piranha$ wget https://github.com/spale75/piranha/archive/piranha-1.1.0.tar.gz```
 2. Unpack
 ```user@piranha$ tar -zxvf piranha-1.1.0.tar.gz```
 3. Compilation
