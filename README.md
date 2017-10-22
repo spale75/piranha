@@ -1,5 +1,9 @@
 # Piranha
-A highly efficient, single threaded, BGP route collector written in C.
+
+![alt text](https://github.com/spale75/piranha/tree/master/web/piranha_s.png "Piranha Logo")
+
+### A highly efficient, multi-threaded, BGP route collector written in C.
+
 Piranha collects routes and dumps them into files for further processing mainly for the purpose of analysis.
 Piranha is NOT a BGP router and does NOT have the capability to announce routes nor does it interact with the kernel routing table.
 
@@ -12,15 +16,41 @@ Piranha supports:
 
 ## Installation
 
-1. Download the latest version at https://github.com/spale75/piranha/archive/piranha-1.1.0.tar.gz
-```user@piranha$ wget https://github.com/spale75/piranha/archive/piranha-1.1.0.tar.gz```
-2. Unpack
-```user@piranha$ tar -zxvf piranha-1.1.0.tar.gz```
-3. Compilation
-```user@piranha$ [sudo] ./compile.sh <destination folder>```
-```user@piranha$ [sudo] ./compile.sh /opt/piranha/```
+#### Download
+Download the latest version at https://github.com/spale75/piranha/archive/piranha-1.1.0.tar.gz
+    user@piranha$ wget https://github.com/spale75/piranha/archive/piranha-1.1.0.tar.gz
+    
+####  Unpack
+Unpack the TGZ file. Don't worry, all files contained in the TGZ are in a subfolder.
+    
+    user@piranha$ tar -zxvf piranha-1.1.0.tar.gz
+
+#### Compile and Install
+
+    user@piranha$ [sudo] ./compile.sh <destination folder>
+    user@piranha$ [sudo] ./compile.sh /opt/piranha/
+
 *NOTE: Might need sudo if your destination is not writable by the user.*
-4. Done
+
+#### Debug
+If you have troubles compiling the code, you can enable debug for compiling.
+
+    user@piranha$ [sudo] ./compile.sh /opt/piranha debug
+
+*NOTE: This will also enable DEBUG in the code. Piranha will output A LOT of debugging messages. Do NOT run this on production. Connect only one neighbor, the debugging is not designed to understand the messages when multiple peers are connected.*
+
+#### Testing
+In the source there is a "test" folder containing a shell script named "test.sh". Run this from the test folder and it will compare the decoding of sample dump files compared to a reference. Typical output:
+
+	user@piranha$ ./test.sh
+    Testing ipv4 in mode H: OK
+    Testing ipv4 in mode m: OK
+    Testing ipv4 in mode j: OK
+    Testing ipv6 in mode H: OK
+    Testing ipv6 in mode m: OK
+    Testing ipv6 in mode j: OK
+	user@piranha$
+
 
 ## Configuration
 Piranha has one configuration file located in <destination folder>/etc/piranha.conf. In the same folder there is a sample configuration name piranha_sample.conf. Copy the file to piranha.conf and edit it.
@@ -101,12 +131,12 @@ With the tool `<install dir>/bin/ptoa` data from the dump files can be exported 
 ### Message type tags in DUMPs
 Colons can be used to align columns.
 
-| Human | Machine | JSON | Description |
-|-|-|-|-|
-| peer | P | peer | First message in any dump describing the neighbor |
-| announce | A | announce | BGP prefix announce, optional origin (O), aspath (AP), community (C) and extended community (EC) subcomponents |
-| withdrawn | W | withdrawn | BGP prefix withdrawn |
-| eof | E | footer | Last message in any dump, has no other value |
+| Human     | Machine | JSON | Description |
+|:----------|:--------|:----------|:---------------------------------------------------------------------------------------------------------------|
+| peer      | P       | peer      | First message in any dump describing the neighbor                                                              |
+| announce  | A       | announce  | BGP prefix announce, optional origin (O), aspath (AP), community (C) and extended community (EC) subcomponents |
+| withdrawn | W       | withdrawn | BGP prefix withdrawn                                                                                           |
+| eof       | E       | footer    | Last message in any dump, has no other value                                                                   |
 
 
 ## Conformity
@@ -130,4 +160,5 @@ Piranha implements partially or completely the following RFCs:
 *Copyright 2004-2017 Pascal Gloor*
 *Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0*
 *Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.*
+
 
