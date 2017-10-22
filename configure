@@ -1,3 +1,116 @@
-#!/bin/sh
+#!/bin/sh -e
 
-echo "Please use ./compile.sh"
+BIN_DEPS="mkdir rm cat sed cp chmod"
+
+PREFIX=/opt/piranha
+DEBUG=0
+VERBOSE=0
+CONFIG=".config.mk"
+
+find_exec()
+{
+	EXE=`which $1 2>/dev/null`
+}
+
+usage()
+{
+	printf "Usage %s [--debug] [--verbose] [--prefix=/path] [--help]\n" $1
+	printf "  --help    : show help\n"
+	printf "  --debug   : enable debug code\n"
+	printf "  --verbose : enable verbose compilation\n"
+	printf "  --prefix  : set base installation directory (default: /usr/local)\n"
+	exit 0
+}
+
+onoff()
+{
+	if [ $1 -eq 1 ]
+	then
+		onoff="enabled"
+	else
+		onoff="disabled"
+	fi
+}
+
+show_conf()
+{
+	printf "Piranha configuration script\n"
+	printf "\n"
+	printf "Detected Arch       : %s\n" ${ARCH}
+	printf "Detected OS         : %s %s\n" ${OS} ${OSVER}
+	printf "Detected Comiler    : %s\n" ${CC}
+	printf "Installation prefix : %s\n" ${PREFIX}
+	onoff ${DEBUG}
+	printf "Debug code          : %s\n" ${onoff}
+	onoff ${VERBOSE}
+	printf "Verbose compilation : %s\n" ${onoff}
+	printf "\n"
+}
+
+write_conf()
+{
+	rm -f ${CONFIG}
+	for NAME in ARCH OS OSVER PREFIX DEBUG VERBOSE CC
+	do
+		VALUE=`eval echo "\\$${NAME}"`
+		printf "%s=%s\n" ${NAME} ${VALUE} >> ${CONFIG}
+	done
+
+	for EXE in ${BIN_DEPS}
+	do
+		NAME=`echo ${EXE} | tr [:lower:] [:upper:]`
+		find_exec ${EXE}
+		if [ -z "${EXE}" ]
+		then
+			printf "ERROR: Failed to locate '%s'\n" ${NAME}
+			exit 1;
+		fi
+		printf "%s=%s\n" ${NAME} ${EXE} >> ${CONFIG}
+	done
+}
+
+detect_os()
+{
+	OS=`uname -s | tr [a-z] [A-Z]`
+	OSVER=`uname -r`
+	ARCH=`uname -m`
+	find_exec "gcc"
+	if [ -z "${EXE}" ]
+	then
+		find_exec "cc"
+	fi
+	CC=${EXE}
+
+	if [ -z "$CC" ]
+	then
+		printf "ERROR: Failed to locate gcc/ccn\n"
+		exit 1;
+	fi
+}
+
+for arg in "$@"
+do
+	case $arg in
+		--prefix=*)
+		PREFIX=`echo -- "$arg" | awk -F= '{print $2}'`
+		;;
+		--verbose)
+		VERBOSE=1
+		;;
+		--debug)
+		DEBUG=1
+		;;
+		--help)
+			usage $0
+		;;
+		*)
+			printf "Unknown argument '%s'\n" $arg
+			exit 1
+		;;
+	esac
+done
+
+detect_os
+show_conf
+write_conf
+
