@@ -17,9 +17,9 @@ Piranha supports:
 ## Installation
 
 #### Download
-[Download the latest version](https://github.com/spale75/piranha/archive/piranha-1.1.1.tar.gz)
+[Download the latest version](https://github.com/spale75/piranha/releases/latest)
 
-    user@piranha$ wget https://github.com/spale75/piranha/archive/piranha-1.1.1.tar.gz
+    user@piranha$ wget https://github.com/spale75/piranha/archive/piranha-x.x.x.tar.gz
     
 ####  Unpack
 Unpack the TGZ file. Don't worry, all files contained in the TGZ are in a subfolder.
