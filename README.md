@@ -1,6 +1,6 @@
 # Piranha
 
-![alt text](https://github.com/spale75/piranha/tree/master/web/piranha_s.png "Piranha Logo")
+![alt text](https://github.com/spale75/piranha/raw/master/web/piranha_s.png "Piranha Logo")
 
 ### A highly efficient, multi-threaded, BGP route collector written in C.
 
