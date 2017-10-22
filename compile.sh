@@ -378,10 +378,8 @@ echo ""
 
 addpath "./utils/piranhactl";
 
-for ((i = 0; i < ${#src[@]}; i++))
-do
-	copy_file ./${prog[$i]} ${DIR}/${prog[$i]} 555
-done
+copy_file ./${bin_1} ${DIR}/${bin_1} 555
+copy_file ./${bin_2} ${DIR}/${bin_2} 555
 
 copy_file ./etc/piranha_sample.conf ${DIR}/etc/piranha_sample.conf 644
 copy_file ./utils/piranhactl ${DIR}/bin/piranhactl 555
