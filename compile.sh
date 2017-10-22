@@ -170,39 +170,29 @@ then
 	cc="gcc";
 	CC="GCC";
 	debug="-g -DDEBUG";
+	# defaults
+	warn="-Wall -Wshadow -Wcast-qual -Wpointer-arith \
+		-Wstrict-prototypes -Wmissing-prototypes -Wmissing-declarations \
+		-Wredundant-decls -Wnested-externs -Werror";
+	opt="-O2 -pedantic -fsigned-char";
+	lib=""
 
 	if [ "$OS" = "FREEBSD" ]
 	then
-		warn="-Wall -Wshadow -Wcast-qual -Wcast-align -Wpointer-arith \
-			-Wstrict-prototypes -Wmissing-prototypes -Wmissing-declarations \
-			-Wredundant-decls -Wnested-externs -Werror";
-		opt="-O2 -ansi -pedantic -fsigned-char";
 		lib="-pthread -D_THREAD_SAFE";
 	elif [ "$OS" = "NETBSD" ]
 	then
-		warn="-Wall -Wshadow -Wcast-qual -Wcast-align -Wpointer-arith \
-			-Wstrict-prototypes -Wmissing-prototypes -Wmissing-declarations \
-			-Wredundant-decls -Wnested-externs -Werror";
-		opt="-O2 -ansi -pedantic -fsigned-char";
 		lib="-lpthread";
 	elif [ "$OS" = "LINUX" ]
 	then
-		warn="-Wall -Wshadow -Wcast-qual -Wcast-align -Wpointer-arith \
-			-Wstrict-prototypes -Wmissing-prototypes -Wmissing-declarations \
-			-Wnested-externs ";
 		lib="-lpthread";
-		opt="-O2 -fsigned-char";
 	elif [ "$OS" = "DARWIN" ]
 	then
-		warn="-Wall -Wshadow -Wcast-qual -Wpointer-arith \
-			-Wstrict-prototypes -Wmissing-prototypes -Wmissing-declarations \
-			-Wnested-externs -Werror";
-		opt="-O2 -fsigned-char";
+		lib=""
 	else
 		echo "WARNING: You're running an untested OS (${OS} ${OSVER}). " \
 			"The compilation might not work.";
 		warn="-Wall"
-		opt="-O2 -ansi -pedantic -fsigned-char";
 		lib="-lpthread";
 	fi
 
