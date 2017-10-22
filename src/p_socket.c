@@ -39,7 +39,7 @@
 /*  init the listening socket */
 int p_socket_start(struct config_t *config, struct peer_t *peer)
 {
-	#ifdef LINUX
+	#ifdef OS_LINUX
 	int peerid;
 	#endif
 	struct timeval timeout;
@@ -223,7 +223,7 @@ int p_socket_start(struct config_t *config, struct peer_t *peer)
 
 
 	// TCP MD5 currently only supported on Linux
-	#ifdef LINUX
+	#ifdef OS_LINUX
 	for(peerid=0; peerid<MAX_PEERS; peerid++)
 	{
 		if ( peer[peerid].key[0] != '\0' )

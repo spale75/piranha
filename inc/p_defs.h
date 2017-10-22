@@ -22,23 +22,7 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 
-#ifdef DARWIN
-#include <libkern/OSByteOrder.h>
-#define htobe16(x) OSSwapHostToBigInt16(x)
-#define htole16(x) OSSwapHostToLittleInt16(x)
-#define be16toh(x) OSSwapBigToHostInt16(x)
-#define le16toh(x) OSSwapLittleToHostInt16(x)
-#define htobe32(x) OSSwapHostToBigInt32(x)
-#define htole32(x) OSSwapHostToLittleInt32(x)
-#define be32toh(x) OSSwapBigToHostInt32(x)
-#define le32toh(x) OSSwapLittleToHostInt32(x)
-#define htobe64(x) OSSwapHostToBigInt64(x)
-#define htole64(x) OSSwapHostToLittleInt64(x)
-#define be64toh(x) OSSwapBigToHostInt64(x)
-#define le64toh(x) OSSwapLittleToHostInt64(x)
-#else
-#include <endian.h>
-#endif
+#include <p_endian.h>
 
 #ifndef PIRANHA_DEFS
 #define PIRANHA_DEFS
@@ -54,7 +38,7 @@
 #define MAX_PEERS 128
 #define DUMPINTERVAL 5
 
-#ifdef LINUX
+#if defined(OS_LINUX)
 #define MAX_KEY_LEN (TCP_MD5SIG_MAXKEYLEN+1)
 #else
 #define MAX_KEY_LEN 1
@@ -120,7 +104,7 @@
 
 #define DUMP_FOOTER     255
 
-#ifdef SUNCC
+#ifdef CC_SUNCC
 #pragma packed()
 #endif
 
@@ -129,7 +113,7 @@ struct bgp_header
 	char     marker[16];
 	uint16_t len;
 	uint8_t  type;
-#ifdef GCC
+#ifdef CC_GCC
 } __attribute__((packed));
 #else
 };
@@ -142,7 +126,7 @@ struct bgp_open
 	uint16_t holdtime;
 	uint32_t bgp_id;
 	uint8_t  param_len;
-#ifdef GCC
+#ifdef CC_GCC
 } __attribute__((packed));
 #else
 };
@@ -153,7 +137,7 @@ struct bgp_param
 	uint8_t type;
 	uint8_t len;
 	char    param[256];
-#ifdef GCC
+#ifdef CC_GCC
 } __attribute__((packed));
 #else
 };
@@ -167,7 +151,7 @@ struct bgp_param_capa
 		char def[256];
 		uint32_t as4;
 	} u;
-#ifdef GCC
+#ifdef CC_GCC
 } __attribute__((packed));
 #else
 };
@@ -178,7 +162,7 @@ struct bgp_error
 	uint8_t code;
 	uint8_t subcode;
 	char    data[6];
-#ifdef GCC
+#ifdef CC_GCC
 } __attribute__((packed));
 #else
 };
@@ -189,7 +173,7 @@ struct dump_msg
 	uint8_t type;
 	uint16_t len;
 	uint64_t ts;
-#ifdef GCC
+#ifdef CC_GCC
 } __attribute__((packed));
 #else
 };
@@ -199,7 +183,7 @@ struct dump_header4
 {
 	uint32_t ip;
 	uint32_t as;
-#ifdef GCC
+#ifdef CC_GCC
 } __attribute__((packed));
 #else
 };
@@ -209,7 +193,7 @@ struct dump_header6
 {
 	uint8_t ip[16];
 	uint32_t as;
-#ifdef GCC
+#ifdef CC_GCC
 } __attribute__((packed));
 #else
 };
@@ -219,7 +203,7 @@ struct dump_withdrawn4
 {
 	uint8_t  mask;
 	uint32_t prefix;
-#ifdef GCC
+#ifdef CC_GCC
 } __attribute__((packed));
 #else
 };
@@ -229,7 +213,7 @@ struct dump_withdrawn6
 {
 	uint8_t mask;
 	uint8_t prefix[16];
-#ifdef GCC
+#ifdef CC_GCC
 } __attribute__((packed));
 #else
 };
@@ -243,7 +227,7 @@ struct dump_announce4
 	uint8_t  aspathlen;
 	uint8_t  communitylen;
 	uint8_t  extcommunitylen;
-#ifdef GCC
+#ifdef CC_GCC
 } __attribute__((packed));
 #else
 };
@@ -252,7 +236,7 @@ struct dump_announce4
 struct dump_announce_aspath
 {
 	uint32_t data[256];
-#ifdef GCC
+#ifdef CC_GCC
 } __attribute__((packed));
 #else
 };
@@ -266,7 +250,7 @@ struct dump_announce6
 	uint8_t aspathlen;
 	uint8_t communitylen;
 	uint8_t extcommunitylen;
-#ifdef GCC
+#ifdef CC_GCC
 } __attribute__((packed));
 #else
 };
@@ -278,7 +262,7 @@ struct dump_announce_community
 		uint16_t asn;
 		uint16_t num;
 	} data[256];
-#ifdef GCC
+#ifdef CC_GCC
 } __attribute__((packed));
 #else
 };
@@ -290,7 +274,7 @@ struct dump_announce_extcommunity
 		uint32_t ip;
 		uint32_t num;
 	} data[256];
-#ifdef GCC
+#ifdef CC_GCC
 } __attribute__((packed));
 #else
 };
@@ -310,7 +294,7 @@ struct dump_full_msg
 	struct dump_announce_aspath aspath;
 	struct dump_announce_community community;
 	struct dump_announce_extcommunity extcommunity;
-#ifdef GCC
+#ifdef CC_GCC
 } __attribute__((packed));
 #else
 };

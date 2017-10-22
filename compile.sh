@@ -197,7 +197,6 @@ then
 		warn="-Wall -Wshadow -Wcast-qual -Wpointer-arith \
 			-Wstrict-prototypes -Wmissing-prototypes -Wmissing-declarations \
 			-Wnested-externs -Werror";
-#		lib="-lpthread";
 		opt="-O2 -fsigned-char";
 	else
 		echo "WARNING: You're running an untested OS (${OS} ${OSVER}). " \
@@ -256,7 +255,7 @@ bin_2="bin/ptoa"
 tmp_1=""
 tmp_2=""
 
-opt="$opt -D${OS} -D${CC}";
+opt="$opt -DOS_${OS} -DCC_${CC}";
 
 for compile in ${src_1}
 do

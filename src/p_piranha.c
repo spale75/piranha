@@ -562,7 +562,7 @@ void p_main_peer_work(char *ibuf, char *obuf, int id)
 					peer[id].af == 4 ? p_tools_ip4str(id, &peer[id].ip4) : p_tools_ip6str(id, &peer[id].ip6),
 					bopen->version);
 				p_log_add((time_t)ts.tv_sec, logline);
-				#ifdef DEBUB
+				#ifdef DEBUG
 				printf("invalid BGP version %u\n",bopen->version);
 				#endif
 				peer[id].status = 0;
