@@ -173,7 +173,7 @@ then
 	# defaults
 	warn="-Wall -Wshadow -Wcast-qual -Wpointer-arith \
 		-Wstrict-prototypes -Wmissing-prototypes -Wmissing-declarations \
-		-Wredundant-decls -Wnested-externs -Werror";
+		-Wredundant-decls -Wnested-externs";
 	opt="-O2 -fsigned-char";
 	lib=""
 
