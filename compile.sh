@@ -174,7 +174,7 @@ then
 	warn="-Wall -Wshadow -Wcast-qual -Wpointer-arith \
 		-Wstrict-prototypes -Wmissing-prototypes -Wmissing-declarations \
 		-Wredundant-decls -Wnested-externs -Werror";
-	opt="-O2 -pedantic -fsigned-char";
+	opt="-O2 -fsigned-char";
 	lib=""
 
 	if [ "$OS" = "FREEBSD" ]
