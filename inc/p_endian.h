@@ -16,6 +16,7 @@
 		#define s6_addr32 __u6_addr.__u6_addr32
 	#elif defined (OS_FREEBSD) || defined (OS_NETBSD)
 		#include <sys/endian.h>
+		#define s6_addr32 __u6_addr.__u6_addr32
 	#elif defined (OS_LINUX) || defined (OS_OPENBSD)
 		#include <endian.h>
 	#endif
