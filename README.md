@@ -18,6 +18,7 @@ Piranha supports:
 
 #### Download
 [Download the latest version](https://github.com/spale75/piranha/archive/piranha-1.1.1.tar.gz)
+
     user@piranha$ wget https://github.com/spale75/piranha/archive/piranha-1.1.1.tar.gz
     
 ####  Unpack
@@ -93,10 +94,15 @@ neighbor <IPv4 or IPv6 address> <asn> [password]
 ```
 ## Usage
 ### Start/Stop/Restart
+
     <install dir>/etc/piranhactl <start|restart|stop>
+
 ### Status (state of all neighbors)
+
     cat <install dir>/var/piranha.status
+
 ### MAN Pages
+
     man -M <install dir>/man <ptoa|piranha|piranhactl|piranha.conf>
 
 ## Reading Piranha DUMP
