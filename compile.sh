@@ -249,63 +249,93 @@ libdir=""
 srcdir="src"
 objdir="obj"
 
-src=( \
-	"p_tools p_config p_socket p_log p_dump p_piranha" \
-	"p_tools p_undump p_ptoa" \
-)
-
-prog=( \
-	"bin/piranha" \
-	"bin/ptoa" \
-)
-
-tmp=( '' '' )
+src_1="p_tools p_config p_socket p_log p_dump p_piranha"
+src_2="p_tools p_undump p_ptoa"
+bin_1="bin/piranha"
+bin_2="bin/ptoa"
+tmp_1=""
+tmp_2=""
 
 opt="$opt -D${OS} -D${CC}";
 
-for ((i = 0; i < ${#src[@]}; i++))
-do
-	for compile in ${src[$i]}
-	do
-		if [ -n "${DODEBUG}" ]
-		then
-			echo "$cc $debug -DPATH=\"${DIR}\" $libdir $incdir $opt $warn " \
-				"-o $objdir/$compile.o -c $srcdir/$compile.c";
-		else
-			printf "compiling %-17s   ->   %-17s ... " \
-				$srcdir/$compile.c $objdir/$compile.o
-		fi
-		
-		$cc $debug -DPATH=\"${DIR}\" $libdir $incdir $opt $warn \
-			-o $objdir/$compile.o -c $srcdir/$compile.c
-
-		if [ "$?" -ne "0" ]
-		then
-			echo "ERROR: compilation error"
-			exit 1;
-		else
-			echo "ok";
-		fi
-	
-		tmp[$i]="${tmp[$i]} $objdir/$compile.o"
-	done
-done
-
-for ((i = 0; i < ${#src[@]}; i++))
+for compile in ${src_1}
 do
 	if [ -n "${DODEBUG}" ]
 	then
-		echo "$cc $debug $libdir $incdir $lib $warn -o ${prog[$i]} ${tmp[$i]}";
+		echo "$cc $debug -DPATH=\"${DIR}\" $libdir $incdir $opt $warn " \
+			"-o $objdir/$compile.o -c $srcdir/$compile.c";
 	else
-		echo "";
-		tab_print "linking" "${tmp[$i]} [${prog[$i]}]"
+		printf "compiling %-17s   ->   %-17s ... " \
+			$srcdir/$compile.c $objdir/$compile.o
 	fi
+	
+	$cc $debug -DPATH=\"${DIR}\" $libdir $incdir $opt $warn \
+		-o $objdir/$compile.o -c $srcdir/$compile.c
+
+	if [ "$?" -ne "0" ]
+	then
+		echo "ERROR: compilation error"
+		exit 1;
+	else
+		echo "ok";
+	fi
+
+	tmp_1="${tmp_1} $objdir/$compile.o"
 done
 
-for ((i = 0; i < ${#src[@]}; i++))
+if [ -n "${DODEBUG}" ]
+then
+	echo "$cc $debug $libdir $incdir $lib $warn -o ${bin_1} ${tmp_1}"
+else
+	echo "";
+	tab_print "linking" "$tmp_1 $bin_1"
+fi
+
+$cc $debug $libdir $incdir $warn -o ${bin_1} ${tmp_1} $lib
+
+if [ "$?" -ne "0" ]
+then
+	echo "ERROR: linking error"
+	exit 1;
+else
+	echo "ok";
+fi
+
+
+for compile in ${src_2}
 do
-	$cc $debug $libdir $incdir $warn -o ${prog[$i]} ${tmp[$i]} $lib
+	if [ -n "${DODEBUG}" ]
+	then
+		echo "$cc $debug -DPATH=\"${DIR}\" $libdir $incdir $opt $warn " \
+			"-o $objdir/$compile.o -c $srcdir/$compile.c";
+	else
+		printf "compiling %-17s   ->   %-17s ... " \
+			$srcdir/$compile.c $objdir/$compile.o
+	fi
+	
+	$cc $debug -DPATH=\"${DIR}\" $libdir $incdir $opt $warn \
+		-o $objdir/$compile.o -c $srcdir/$compile.c
+
+	if [ "$?" -ne "0" ]
+	then
+		echo "ERROR: compilation error"
+		exit 1;
+	else
+		echo "ok";
+	fi
+
+	tmp_2="${tmp_2} $objdir/$compile.o"
 done
+
+if [ -n "${DODEBUG}" ]
+then
+	echo "$cc $debug $libdir $incdir $lib $warn -o ${bin_2} ${tmp_2}"
+else
+	echo "";
+	tab_print "linking" "$tmp_2 $bin_2"
+fi
+
+$cc $debug $libdir $incdir $warn -o ${bin_2} ${tmp_2} $lib
 
 if [ "$?" -ne "0" ]
 then
