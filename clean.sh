@@ -22,12 +22,16 @@
 
 # Piranha source cleaning script
 
-for file in bin/piranha bin/ptoa obj/*.o *.core utils/piranhactl
+for item in bin obj *.core utils/piranhactl
 do
-	if [ -r "$file" ]
+	if [ -d "$item" ]
 	then
-		echo "deleting $file..."
-		rm $file
+		echo "deleting directory $item..."
+		rm -rf $item
+	elif [ -f "$item" ]
+	then
+		echo "deleting file $item..."
+		rm -f $item
 	fi
 done
 

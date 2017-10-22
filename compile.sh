@@ -239,6 +239,10 @@ fi
 
 echo ""
 
+echo "Creating required directories"
+create_dir 'bin'
+create_dir 'obj'
+
 
 incdir="-Iinc"
 libdir=""
