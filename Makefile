@@ -41,8 +41,8 @@ RUN_PRINT=
 RUN_EXEC=@
 endif
 
-PRINTF1=@printf "  %-10s %-20s\n"
-PRINTF2=@printf "  %-10s %-20s -> %s\n"
+PRINTF1=@printf "  %-7s %-25s\n"
+PRINTF2=@printf "  %-7s %-25s -> %s\n"
 
 
 CFLAGS=$(OPT) $(WARNINGS) $(INCLUDES) -DOS_$(OS) -DPATH='"$(PREFIX)"'
