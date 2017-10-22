@@ -115,24 +115,25 @@ With the tool `<install dir>/bin/ptoa` data from the dump files can be exported 
 * `./ptoa -j <dump file>`: JSON format
 
 ### Examples
+
 #### Human readable format
-```
-2017-10-21 21:31:54 peer ip 2a03:2260::5 AS 201701
-2017-10-21 21:31:54 prefix announce 2a06:dac0::/29 origin IGP aspath 201701 13030 25180 202939 community 5093:5349 6629:6885 7141:7397
-2017-10-21 21:31:55 eof
-```
+
+    2017-10-21 21:31:54 peer ip 2a03:2260::5 AS 201701
+    2017-10-21 21:31:54 prefix announce 2a06:dac0::/29 origin IGP aspath 201701 13030 25180 202939 community 5093:5349 6629:6885 7141:7397
+    2017-10-21 21:31:55 eof
+
 #### Machine readable format
-```
-1508621514|P|2a03:2260::5|201701
-1508621514|A|2a06:dac0::|29|O|I|AP|201701 13030 25180 202939|C|5093:5349 5605:5861 6629:6885 7141:7397
-1508621515|E
-```
+
+    1508621514|P|2a03:2260::5|201701
+    1508621514|A|2a06:dac0::|29|O|I|AP|201701 13030 25180 202939|C|5093:5349 5605:5861 6629:6885 7141:7397
+    1508621515|E
+
 #### JSON format
-```
-{ "timestamp": 1508621514, "type": "peer", "msg": { "peer": { "proto": "ipv6", "ip": "2a03:2260::5", "asn": 201701 } } }
-{ "timestamp": 1508621514, "type": "announce", "msg": { "prefix": "2a06:dac0::/29", "origin": "IGP", "aspath": [ 201701, 13030, 25180, 202939 ], "community": [ "5093:5349", "5605:5861", "6629:6885", "7141:7397" ] } }
-{ "timestamp": 1508621515, "type": "footer" }
-```
+When decoding JSON, you must decode each line individually. Because dump file can have millions of routes, it would use too much resouces for the decoder to decode them at once. This is why there is one JSON object per line.
+
+    { "timestamp": 1508621514, "type": "peer", "msg": { "peer": { "proto": "ipv6", "ip": "2a03:2260::5", "asn": 201701 } } }
+    { "timestamp": 1508621514, "type": "announce", "msg": { "prefix": "2a06:dac0::/29", "origin": "IGP", "aspath": [ 201701, 13030, 25180, 202939 ], "community": [ "5093:5349", "5605:5861", "6629:6885", "7141:7397" ] } }
+    { "timestamp": 1508621515, "type": "footer" }
 
 ### Message type tags in DUMPs
 Colons can be used to align columns.
