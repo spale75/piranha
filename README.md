@@ -123,7 +123,7 @@ Piranha implements partially or completely the following RFCs:
 * Config reload does not work and may lead to a crash.
 * Extended communities are not yet supported.
 * Piranha is not able to communicate with BGP speakers not conforming to RFC5492 (old speakers).
-* Might not work on 32bits platforms (time_t handling must be improved).
+* MD5 protection is only supported on Linux Kernels.
 
 ## Copyright
 
