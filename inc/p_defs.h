@@ -77,18 +77,30 @@
 #define BGP_ERROR	3
 #define BGP_KEEPALIVE	4
 
-#define BGP_ATTR_ORIGIN			1
-#define BGP_ATTR_AS_PATH		2
-#define BGP_ATTR_NEXT_HOP		3
-#define BGP_ATTR_COMMUNITY		8
+#define BGP_ATTR_ORIGIN				1
+#define BGP_ATTR_AS_PATH			2
+#define BGP_ATTR_NEXT_HOP			3
+#define BGP_ATTR_COMMUNITY			8
 #define BGP_ATTR_MP_REACH_NLRI		14
 #define BGP_ATTR_MP_UNREACH_NLRI	15
-#define BGP_ATTR_EXTCOMMUNITY		16
+#define BGP_ATTR_EXTCOMMUNITY4		16
+#define BGP_ATTR_EXTCOMMUNITY6		25
+#define BGP_ATTR_LARGECOMMUNITY		32
 
-#define EXPORT_ORIGIN       0x01
-#define EXPORT_ASPATH       0x02
-#define EXPORT_COMMUNITY    0x04
-#define EXPORT_EXTCOMMUNITY 0x08
+// absolute theoretical maximums knowing that a BGP message cannot be longer than 65535 octets
+// and that an attribute can be as long as 65535 (minus the rest of the message)
+// The limit below might be a bit a above for simplification but it may NOT be below.
+#define BGP_MAXLEN_AS_PATH          255
+#define BGP_MAXLEN_COMMUNITY      16383
+#define BGP_MAXLEN_EXTCOMMUNITY4   8192
+#define BGP_MAXLEN_EXTCOMMUNITY6   3276
+#define BGP_MAXLEN_LARGECOMMUNITY  5461
+
+#define EXPORT_ORIGIN         0x01
+#define EXPORT_ASPATH         0x02
+#define EXPORT_COMMUNITY      0x04
+#define EXPORT_EXTCOMMUNITY   0x08
+#define EXPORT_LARGECOMMUNITY 0x10
 
 #define DUMP_OPEN        10
 #define DUMP_CLOSE       11
@@ -225,8 +237,9 @@ struct dump_announce4
 	uint32_t prefix;
 	uint8_t  origin;
 	uint8_t  aspathlen;
-	uint8_t  communitylen;
-	uint8_t  extcommunitylen;
+	uint16_t communitylen;
+	uint16_t extcommunitylen4;
+	uint16_t largecommunitylen;
 #ifdef CC_GCC
 } __attribute__((packed));
 #else
@@ -244,12 +257,13 @@ struct dump_announce_aspath
 
 struct dump_announce6
 {
-	uint8_t mask;
-	uint8_t prefix[16];
-	uint8_t origin;
-	uint8_t aspathlen;
-	uint8_t communitylen;
-	uint8_t extcommunitylen;
+	uint8_t  mask;
+	uint8_t  prefix[16];
+	uint8_t  origin;
+	uint8_t  aspathlen;
+	uint16_t communitylen;
+	uint16_t extcommunitylen6;
+	uint16_t largecommunitylen;
 #ifdef CC_GCC
 } __attribute__((packed));
 #else
@@ -261,6 +275,32 @@ struct dump_announce_community
 	struct {
 		uint16_t asn;
 		uint16_t num;
+	} data[16384];
+#ifdef CC_GCC
+} __attribute__((packed));
+#else
+};
+#endif
+
+struct dump_announce_largecommunity
+{
+	struct {
+		uint32_t global;
+		uint32_t local1;
+		uint32_t local2;
+	} data[10922];
+#ifdef CC_GCC
+} __attribute__((packed));
+#else
+};
+#endif
+
+struct dump_announce_extcommunity4
+{
+	struct {
+		uint8_t type;
+		uint8_t subtype;
+		u_char  value[6];
 	} data[256];
 #ifdef CC_GCC
 } __attribute__((packed));
@@ -268,11 +308,13 @@ struct dump_announce_community
 };
 #endif
 
-struct dump_announce_extcommunity
+struct dump_announce_extcommunity6
 {
 	struct {
-		uint32_t ip;
-		uint32_t num;
+		uint8_t  type;
+		uint8_t  subtype;
+		uint8_t  global[16];
+		uint16_t local;
 	} data[256];
 #ifdef CC_GCC
 } __attribute__((packed));
@@ -284,16 +326,18 @@ struct dump_full_msg
 {
 	struct dump_msg msg;
 	union {
-		struct dump_header4 header4;
-		struct dump_header6 header6;
-		struct dump_announce4 announce4;
-		struct dump_announce6 announce6;
+		struct dump_header4    header4;
+		struct dump_header6    header6;
+		struct dump_announce4  announce4;
+		struct dump_announce6  announce6;
 		struct dump_withdrawn4 withdrawn4;
 		struct dump_withdrawn6 withdrawn6;
 	};
-	struct dump_announce_aspath aspath;
-	struct dump_announce_community community;
-	struct dump_announce_extcommunity extcommunity;
+	struct dump_announce_aspath         aspath;
+	struct dump_announce_community      community;
+	struct dump_announce_extcommunity4  extcommunity4;
+	struct dump_announce_extcommunity6  extcommunity6;
+	struct dump_announce_largecommunity largecommunity;
 #ifdef CC_GCC
 } __attribute__((packed));
 #else

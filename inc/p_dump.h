@@ -33,13 +33,17 @@ void p_dump_add_withdrawn6 (struct peer_t *peer, int id, uint64_t ts,
                            uint8_t prefix[16], uint8_t mask);
 
 void p_dump_add_announce4 (struct peer_t *peer, int id, uint64_t ts,
-                           uint32_t prefix,    uint8_t mask, uint8_t origin,
-                           void *aspath,       uint8_t aspathlen,
-                           void *community,    uint8_t communitylen,
-                           void *extcommunity, uint8_t extcommunitylen );
+                           uint32_t prefix,      uint8_t mask,
+						   uint8_t origin,
+                           void *aspath,         uint16_t aspathlen,
+                           void *community,      uint16_t communitylen,
+                           void *extcommunity4,  uint16_t extcommunitylen4,
+                           void *largecommunity, uint16_t largecommunitylen );
 
 void p_dump_add_announce6 (struct peer_t *peer, int id, uint64_t ts,
-                           uint8_t prefix[16], uint8_t mask, uint8_t origin,
-                           void *aspath,       uint8_t aspathlen,
-                           void *community,    uint8_t communitylen,
-                           void *extcommunity, uint8_t extcommunitylen );
+                           uint8_t prefix[16],   uint8_t mask,
+						   uint8_t origin,
+                           void *aspath,         uint16_t aspathlen,
+                           void *community,      uint16_t communitylen,
+                           void *extcommunity6,  uint16_t extcommunitylen6,
+                           void *largecommunity, uint16_t largecommunitylen );

@@ -192,35 +192,40 @@ void p_dump_add_withdrawn6(struct peer_t *peer, int id, uint64_t ts, uint8_t pre
 
 /* log IPv4 bgp announce msg */
 void p_dump_add_announce4(struct peer_t *peer, int id, uint64_t ts,
-			uint32_t prefix,    uint8_t mask,  uint8_t origin,
-			void *aspath,       uint8_t aspathlen,
-			void *community,    uint8_t communitylen,
-			void *extcommunity, uint8_t extcommunitylen )
+			uint32_t prefix,      uint8_t mask,
+			uint8_t origin,
+			void *aspath,         uint16_t aspathlen,
+			void *community,      uint16_t communitylen,
+			void *extcommunity4,  uint16_t extcommunitylen4,
+			void *largecommunity, uint16_t largecommunitylen )
 {
 	p_dump_check_file(peer,id,ts);
 
 	if ( peer[id].fh == NULL ) { return; }
 	peer[id].empty = 0;
 	{
-		struct dump_msg                   msg;
-		struct dump_announce4             announce;
-		struct dump_announce_aspath       opt_aspath;
-		struct dump_announce_community    opt_community;
-		struct dump_announce_extcommunity opt_extcommunity;
+		struct dump_msg                     msg;
+		struct dump_announce4               announce;
+		struct dump_announce_aspath         opt_aspath;
+		struct dump_announce_community      opt_community;
+		struct dump_announce_extcommunity4  opt_extcommunity4;
+		struct dump_announce_largecommunity opt_largecommunity;
 
 		msg.type = DUMP_ANNOUNCE4;
 		msg.ts   = htobe64(ts);
 		msg.len  = htobe16(sizeof(announce)
 			+ sizeof(opt_aspath.data[0]) * aspathlen 
 			+ sizeof(opt_community.data[0]) * communitylen
-			+ sizeof(opt_extcommunity.data[0]) * extcommunitylen ); 
+			+ sizeof(opt_extcommunity4.data[0]) * extcommunitylen4
+			+ sizeof(opt_largecommunity.data[0]) * largecommunitylen );
 
-		announce.mask            = mask;
-		announce.prefix          = htobe32(prefix);
-		announce.origin          = origin;
-		announce.aspathlen       = aspathlen;
-		announce.communitylen    = communitylen;
-		announce.extcommunitylen = extcommunitylen;
+		announce.mask              = mask;
+		announce.prefix            = htobe32(prefix);
+		announce.origin            = origin;
+		announce.aspathlen         = aspathlen;
+		announce.communitylen      = communitylen;
+		announce.extcommunitylen4  = extcommunitylen4;
+		announce.largecommunitylen = largecommunitylen;
 
 		#ifdef DEBUG
 		{
@@ -252,15 +257,28 @@ void p_dump_add_announce4(struct peer_t *peer, int id, uint64_t ts,
 			}
 		}
 
-		if ( extcommunitylen > 0 )
+		if ( extcommunitylen4 > 0 )
 		{
 			int i;
-			for(i=0; i<extcommunitylen; i++)
+			for(i=0; i<extcommunitylen4; i++)
 			{
-				opt_extcommunity.data[i].ip  = *(uint32_t*)extcommunity+(i*2);
-				opt_extcommunity.data[i].num = *(uint32_t*)extcommunity+(i*2)+1;
+				opt_extcommunity4.data[i].type    = *(uint8_t*)extcommunity4+(i*8);
+				opt_extcommunity4.data[i].subtype = *(uint8_t*)extcommunity4+(i*8)+1;
+				memcpy(opt_extcommunity4.data[i].value, (uint8_t*)extcommunity4+(i*8)+2, 6);
 			}
 		}
+
+		if ( largecommunitylen > 0 )
+		{
+			int i;
+			for(i=0; i<largecommunitylen; i++)
+			{
+				opt_largecommunity.data[i].global = *(uint32_t*)largecommunity+(i*12);
+				opt_largecommunity.data[i].local1 = *(uint32_t*)largecommunity+(i*12)+1;
+				opt_largecommunity.data[i].local2 = *(uint32_t*)largecommunity+(i*12)+1;
+			}
+		}
+
 
 		fwrite(&msg, sizeof(msg), 1, peer[id].fh);
 		fwrite(&announce, sizeof(announce), 1, peer[id].fh);
@@ -271,41 +289,49 @@ void p_dump_add_announce4(struct peer_t *peer, int id, uint64_t ts,
 		if ( communitylen > 0 )
 			fwrite(&opt_community, sizeof(opt_community.data[0]), communitylen, peer[id].fh);
 
-		if ( extcommunitylen > 0 )
-			fwrite(&opt_extcommunity, sizeof(opt_extcommunity.data[0]), extcommunitylen, peer[id].fh);
+		if ( extcommunitylen4 > 0 )
+			fwrite(&opt_extcommunity4, sizeof(opt_extcommunity4.data[0]), extcommunitylen4, peer[id].fh);
+
+		if ( largecommunitylen > 0 )
+			fwrite(&opt_largecommunity, sizeof(opt_largecommunity.data[0]), largecommunitylen, peer[id].fh);
 	}
 }
 /* log IPv6 bgp announce msg */
 void p_dump_add_announce6(struct peer_t *peer, int id, uint64_t ts,
-			uint8_t prefix[16], uint8_t mask,  uint8_t origin,
-			void *aspath,       uint8_t aspathlen,
-			void *community,    uint8_t communitylen,
-			void *extcommunity, uint8_t extcommunitylen )
+			uint8_t prefix[16],   uint8_t mask,
+			uint8_t origin,
+			void *aspath,         uint16_t aspathlen,
+			void *community,      uint16_t communitylen,
+			void *extcommunity6,  uint16_t extcommunitylen6,
+			void *largecommunity, uint16_t largecommunitylen )
 {
 	p_dump_check_file(peer,id,ts);
 
 	if ( peer[id].fh == NULL ) { return; }
 	peer[id].empty = 0;
 	{
-		struct dump_msg                   msg;
-		struct dump_announce6             announce;
-		struct dump_announce_aspath       opt_aspath;
-		struct dump_announce_community    opt_community;
-		struct dump_announce_extcommunity opt_extcommunity;
+		struct dump_msg                     msg;
+		struct dump_announce6               announce;
+		struct dump_announce_aspath         opt_aspath;
+		struct dump_announce_community      opt_community;
+		struct dump_announce_extcommunity6  opt_extcommunity6;
+		struct dump_announce_largecommunity opt_largecommunity;
 
 		msg.type = DUMP_ANNOUNCE6;
 		msg.ts   = htobe64(ts);
 		msg.len  = htobe16( sizeof(announce)
 			+ sizeof(opt_aspath.data[0]) * aspathlen 
 			+ sizeof(opt_community.data[0]) * communitylen
-			+ sizeof(opt_extcommunity.data[0]) * extcommunitylen ); 
+			+ sizeof(opt_extcommunity6.data[0]) * extcommunitylen6
+			+ sizeof(opt_largecommunity.data[0]) * largecommunitylen );
 
 		memcpy(announce.prefix, prefix, sizeof(announce.prefix));
-		announce.mask            = mask;
-		announce.origin          = origin;
-		announce.aspathlen       = aspathlen;
-		announce.communitylen    = communitylen;
-		announce.extcommunitylen = extcommunitylen;
+		announce.mask              = mask;
+		announce.origin            = origin;
+		announce.aspathlen         = aspathlen;
+		announce.communitylen      = communitylen;
+		announce.extcommunitylen6  = extcommunitylen6;
+		announce.largecommunitylen = largecommunitylen;
 
 		#ifdef DEBUG
 		{
@@ -337,13 +363,26 @@ void p_dump_add_announce6(struct peer_t *peer, int id, uint64_t ts,
 			}
 		}
 
-		if ( extcommunitylen > 0 )
+		if ( extcommunitylen6 > 0 )
 		{
 			int i;
-			for(i=0; i<extcommunitylen; i++)
+			for(i=0; i<extcommunitylen6; i++)
 			{
-				opt_extcommunity.data[i].ip  = *(uint32_t*)extcommunity+(i*2);
-				opt_extcommunity.data[i].num = *(uint32_t*)extcommunity+(i*2)+1;
+				opt_extcommunity6.data[i].type    = *(uint8_t*)extcommunity6+(i*20);
+				opt_extcommunity6.data[i].subtype = *(uint8_t*)extcommunity6+(i*20)+1;
+				memcpy(opt_extcommunity6.data[i].global, (uint8_t*)extcommunity6+(i*8)+2, 16);
+				opt_extcommunity6.data[i].local = *(uint16_t*)(uint8_t*)extcommunity6+(i*8)+18;
+			}
+		}
+
+		if ( largecommunitylen > 0 )
+		{
+			int i;
+			for(i=0; i<largecommunitylen; i++)
+			{
+				opt_largecommunity.data[i].global = *(uint32_t*)largecommunity+(i*12);
+				opt_largecommunity.data[i].local1  = *(uint32_t*)largecommunity+(i*12)+1;
+				opt_largecommunity.data[i].local2  = *(uint32_t*)largecommunity+(i*12)+1;
 			}
 		}
 
@@ -356,8 +395,11 @@ void p_dump_add_announce6(struct peer_t *peer, int id, uint64_t ts,
 		if ( communitylen > 0 )
 			fwrite(&opt_community, sizeof(opt_community.data[0]), communitylen, peer[id].fh);
 
-		if ( extcommunitylen > 0 )
-			fwrite(&opt_extcommunity, sizeof(opt_extcommunity.data[0]), extcommunitylen, peer[id].fh);
+		if ( extcommunitylen6 > 0 )
+			fwrite(&opt_extcommunity6, sizeof(opt_extcommunity6.data[0]), extcommunitylen6, peer[id].fh);
+
+		if ( largecommunitylen > 0 )
+			fwrite(&opt_largecommunity, sizeof(opt_largecommunity.data[0]), largecommunitylen, peer[id].fh);
 
 	}
 }

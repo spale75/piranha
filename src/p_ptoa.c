@@ -276,41 +276,6 @@ int main(int argc, char *argv[])
 						printf(" ]");
 				}
 
-				if ( msg.announce4.extcommunitylen > 0 )
-				{
-					int i;
-	
-					if ( mode == PTOA_MACHINE )
-						printf("|EC|");
-					else if ( mode == PTOA_JSON )
-						printf(", \"extcommunity\": [ ");
-					else
-						printf(" extcommunity");
-	
-					for(i=0; i<msg.announce4.extcommunitylen; i++)
-					{
-						if ( mode == PTOA_MACHINE )
-						{
-							printf("%u:%u",msg.extcommunity.data[i].ip, msg.extcommunity.data[i].num);
-							if ( i < msg.announce4.extcommunitylen-1 ) printf(" ");
-						}
-						else if ( mode == PTOA_JSON )
-						{
-							printf("\"%u:%u\"",msg.extcommunity.data[i].ip, msg.extcommunity.data[i].num);
-							if ( i < msg.announce4.extcommunitylen-1 ) printf(", ");
-						}
-						else
-						{
-							struct in_addr addr;
-							addr.s_addr = msg.extcommunity.data[i].ip;
-							printf(" %s:%u", inet_ntoa(addr), msg.extcommunity.data[i].num);
-						}
-					}
-
-					if ( mode == PTOA_JSON )
-						printf(" ]");
-				}
-	
 				if ( mode == PTOA_JSON )
 					printf(" } }\n");
 				else
@@ -429,41 +394,6 @@ int main(int argc, char *argv[])
 						else
 						{
 							printf(" %u:%u", msg.community.data[i].asn, msg.community.data[i].num);
-						}
-					}
-
-					if ( mode == PTOA_JSON )
-						printf(" ]");
-				}
-
-				if ( msg.announce6.extcommunitylen > 0 )
-				{
-					int i;
-	
-					if ( mode == PTOA_MACHINE )
-						printf("|EC|");
-					else if ( mode == PTOA_JSON )
-						printf(", \"extcommunity\": [ ");
-					else
-						printf(" extcommunity");
-	
-					for(i=0; i<msg.announce6.extcommunitylen; i++)
-					{
-						if ( mode == PTOA_MACHINE )
-						{
-							printf("%u:%u",msg.extcommunity.data[i].ip, msg.extcommunity.data[i].num);
-							if ( i < msg.announce6.extcommunitylen-1 ) printf(" ");
-						}
-						else if ( mode == PTOA_JSON )
-						{
-							printf("\"%u:%u\"",msg.extcommunity.data[i].ip, msg.extcommunity.data[i].num);
-							if ( i < msg.announce6.extcommunitylen-1 ) printf(", ");
-						}
-						else
-						{
-							struct in_addr addr;
-							addr.s_addr = msg.extcommunity.data[i].ip;
-							printf(" %s:%u", inet_ntoa(addr), msg.extcommunity.data[i].num);
 						}
 					}
 

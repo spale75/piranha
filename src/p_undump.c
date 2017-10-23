@@ -135,30 +135,36 @@ int p_undump_readmsg(struct dump_file_ctx *ctx, struct dump_full_msg *fmsg)
 	else if ( ( msg.type == DUMP_ANNOUNCE4 || msg.type == DUMP_ANNOUNCE6 ) && ctx->head )
 	{
 		int jump = 0;
-		struct dump_announce4             *announce4 = NULL;
-		struct dump_announce6             *announce6 = NULL;
-		struct dump_announce_aspath       *aspath;
-		struct dump_announce_community    *community;
-		struct dump_announce_extcommunity *extcommunity;
-		uint8_t aspathlen       = 0;
-		uint8_t communitylen    = 0;
-		uint8_t extcommunitylen = 0;
+		struct dump_announce4               *announce4 = NULL;
+		struct dump_announce6               *announce6 = NULL;
+		struct dump_announce_aspath         *aspath;
+		struct dump_announce_community      *community;
+		struct dump_announce_extcommunity4  *extcommunity4;
+		struct dump_announce_extcommunity6  *extcommunity6;
+		struct dump_announce_largecommunity *largecommunity;
+		uint16_t aspathlen         = 0;
+		uint16_t communitylen      = 0;
+		uint16_t extcommunitylen4  = 0;
+		uint16_t extcommunitylen6  = 0;
+		uint16_t largecommunitylen = 0;
 
 		if ( msg.type == DUMP_ANNOUNCE4 )
 		{
 			announce4 = (struct dump_announce4*)buffer;
 			jump += sizeof(struct dump_announce4);
 	
-			fmsg->announce4.mask            = announce4->mask;
-			fmsg->announce4.prefix          = be32toh(announce4->prefix);
-			fmsg->announce4.origin          = announce4->origin;
-			fmsg->announce4.aspathlen       = announce4->aspathlen;
-			fmsg->announce4.communitylen    = announce4->communitylen;
-			fmsg->announce4.extcommunitylen = announce4->extcommunitylen;
+			fmsg->announce4.mask              = announce4->mask;
+			fmsg->announce4.prefix            = be32toh(announce4->prefix);
+			fmsg->announce4.origin            = announce4->origin;
+			fmsg->announce4.aspathlen         = announce4->aspathlen;
+			fmsg->announce4.communitylen      = announce4->communitylen;
+			fmsg->announce4.extcommunitylen4  = announce4->extcommunitylen4;
+			fmsg->announce4.largecommunitylen = announce4->largecommunitylen;
 
-			aspathlen       = fmsg->announce4.aspathlen;
-			communitylen    = fmsg->announce4.communitylen;
-			extcommunitylen = fmsg->announce4.extcommunitylen;
+			aspathlen         = fmsg->announce4.aspathlen;
+			communitylen      = fmsg->announce4.communitylen;
+			extcommunitylen4  = fmsg->announce4.extcommunitylen4;
+			largecommunitylen = fmsg->announce4.largecommunitylen;
 	
 		}
 		else if ( msg.type == DUMP_ANNOUNCE6 )
@@ -167,15 +173,17 @@ int p_undump_readmsg(struct dump_file_ctx *ctx, struct dump_full_msg *fmsg)
 			jump += sizeof(struct dump_announce6);
 	
 			memcpy(fmsg->announce6.prefix, announce6->prefix, sizeof(announce6->prefix));
-			fmsg->announce6.mask            = announce6->mask;
-			fmsg->announce6.origin          = announce6->origin;
-			fmsg->announce6.aspathlen       = announce6->aspathlen;
-			fmsg->announce6.communitylen    = announce6->communitylen;
-			fmsg->announce6.extcommunitylen = announce6->extcommunitylen;
+			fmsg->announce6.mask              = announce6->mask;
+			fmsg->announce6.origin            = announce6->origin;
+			fmsg->announce6.aspathlen         = announce6->aspathlen;
+			fmsg->announce6.communitylen      = announce6->communitylen;
+			fmsg->announce6.extcommunitylen6  = announce6->extcommunitylen6;
+			fmsg->announce6.largecommunitylen = announce6->largecommunitylen;
 	
-			aspathlen       = fmsg->announce6.aspathlen;
-			communitylen    = fmsg->announce6.communitylen;
-			extcommunitylen = fmsg->announce6.extcommunitylen;
+			aspathlen         = fmsg->announce6.aspathlen;
+			communitylen      = fmsg->announce6.communitylen;
+			extcommunitylen6  = fmsg->announce6.extcommunitylen6;
+			largecommunitylen = fmsg->announce6.largecommunitylen;
 		}
 	
 		if ( aspathlen > 0 )
@@ -201,16 +209,46 @@ int p_undump_readmsg(struct dump_file_ctx *ctx, struct dump_full_msg *fmsg)
 			}
 		}
 
-		if ( extcommunitylen > 0 )
+		if ( extcommunitylen4 > 0 )
 		{
 			int i;
-			extcommunity = (struct dump_announce_extcommunity*) (buffer+jump);
-			jump += sizeof(extcommunity->data[0]) * extcommunitylen;
+			extcommunity4 = (struct dump_announce_extcommunity4*) (buffer+jump);
+			jump += sizeof(extcommunity4->data[0]) * extcommunitylen4;
 
-			for(i=0; i<extcommunitylen; i++)
+			for(i=0; i<extcommunitylen4; i++)
 			{
-				fmsg->extcommunity.data[i].ip  = be32toh(extcommunity->data[i].ip );
-				fmsg->extcommunity.data[i].num = be32toh(extcommunity->data[i].num);
+				fmsg->extcommunity4.data[i].type     = extcommunity4->data[i].type;
+				fmsg->extcommunity4.data[i].subtype  = extcommunity4->data[i].subtype;
+				memcpy(fmsg->extcommunity4.data[i].value, extcommunity4->data[i].value, 6);
+			}
+		}
+
+		if ( extcommunitylen6 > 0 )
+		{
+			int i;
+			extcommunity6 = (struct dump_announce_extcommunity6*) (buffer+jump);
+			jump += sizeof(extcommunity6->data[0]) * extcommunitylen6;
+
+			for(i=0; i<extcommunitylen6; i++)
+			{
+				fmsg->extcommunity6.data[i].type     = extcommunity6->data[i].type;
+				fmsg->extcommunity6.data[i].subtype  = extcommunity6->data[i].subtype;
+				memcpy(fmsg->extcommunity6.data[i].global, extcommunity6->data[i].global, 16);
+				fmsg->extcommunity6.data[i].local    = be16toh(extcommunity6->data[i].local);
+			}
+		}
+
+		if ( largecommunitylen > 0 )
+		{
+			int i;
+			largecommunity = (struct dump_announce_largecommunity*) (buffer+jump);
+			jump += sizeof(largecommunity->data[0]) * largecommunitylen;
+
+			for(i=0; i<largecommunitylen; i++)
+			{
+				fmsg->largecommunity.data[i].global = be32toh(largecommunity->data[i].global);
+				fmsg->largecommunity.data[i].local1 = be32toh(largecommunity->data[i].local1);
+				fmsg->largecommunity.data[i].local2 = be32toh(largecommunity->data[i].local2);
 			}
 		}
 	}

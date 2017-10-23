@@ -697,13 +697,17 @@ void p_main_peer_work(char *ibuf, char *obuf, int id)
 			/* BGP update */
 			uint16_t  wlen;
 			uint16_t  alen;
-			uint8_t   origin = 0xff;
-			void     *aspath = NULL;
-			uint16_t  aspathlen = 0;
-			void     *community = NULL;
-			uint16_t  communitylen = 0;
-			void     *extcommunity = NULL;
-			uint8_t   extcommunitylen = 0;
+			uint8_t   origin            = 0xff;
+			void     *aspath            = NULL;
+			uint16_t  aspathlen         = 0;
+			void     *community         = NULL;
+			uint16_t  communitylen      = 0;
+			void     *extcommunity4     = NULL;
+			uint16_t  extcommunitylen4  = 0;
+			void     *extcommunity6     = NULL;
+			uint16_t  extcommunitylen6  = 0;
+			void     *largecommunity    = NULL;
+			uint16_t  largecommunitylen = 0;
 
 			wlen = *(uint16_t *) (ibuf + pos);
 			wlen = ntohs(wlen);
@@ -825,6 +829,18 @@ void p_main_peer_work(char *ibuf, char *obuf, int id)
 					a[code].len = codelen;
 					attrpos+=codelen;
 
+					if ( attrpos>alen ) // OVERFLOW!
+					{
+						snprintf(logline, sizeof(logline), "%s error in path attributes parsing\n",
+							peer[id].af == 4 ?
+								p_tools_ip4str(id, &peer[id].ip4) :
+								p_tools_ip6str(id, &peer[id].ip6) );
+
+						p_log_add((time_t)ts.tv_sec, logline);
+						peer[id].status = 0;
+						return;
+					}
+
 					#ifdef DEBUG
 
 					printf("code: at offset %u of length %u is %u (%s) (",
@@ -932,15 +948,62 @@ void p_main_peer_work(char *ibuf, char *obuf, int id)
 						return;
 					}
 
-					community = (void *) (ibuf+pos+off);
+					community    = (void *) (ibuf+pos+off);
 					communitylen = codelen / 4;
 				}
 
-				if ( a[BGP_ATTR_EXTCOMMUNITY].pos != 0xffff && config.export & EXPORT_EXTCOMMUNITY )
+				if ( a[BGP_ATTR_EXTCOMMUNITY4].pos != 0xffff && config.export & EXPORT_EXTCOMMUNITY )
 				{
-					#ifdef DEBUG
-					printf("Extended community not yet implemented\n");
-					#endif
+					uint16_t off = a[BGP_ATTR_EXTCOMMUNITY4].pos;
+					uint16_t codelen = a[BGP_ATTR_EXTCOMMUNITY4].len;
+
+					if ( ( codelen % 8 ) != 0 )
+					{
+						snprintf(logline, sizeof(logline), "%s error in extended community IPv4 length\n",
+							peer[id].af == 4 ? p_tools_ip4str(id, &peer[id].ip4) : p_tools_ip6str(id, &peer[id].ip6) );
+						p_log_add((time_t)ts.tv_sec, logline);
+						peer[id].status = 0;
+						return;
+					}
+
+					extcommunity4    = (void *) (ibuf+pos+off);
+					extcommunitylen4 = codelen / 8;
+				}
+
+				if ( a[BGP_ATTR_EXTCOMMUNITY6].pos != 0xffff && config.export & EXPORT_EXTCOMMUNITY )
+				{
+					uint16_t off = a[BGP_ATTR_EXTCOMMUNITY6].pos;
+					uint16_t codelen = a[BGP_ATTR_EXTCOMMUNITY6].len;
+
+					if ( ( codelen % 20 ) != 0 )
+					{
+						snprintf(logline, sizeof(logline), "%s error in extended community IPv6 length\n",
+							peer[id].af == 4 ? p_tools_ip4str(id, &peer[id].ip4) : p_tools_ip6str(id, &peer[id].ip6) );
+						p_log_add((time_t)ts.tv_sec, logline);
+						peer[id].status = 0;
+						return;
+					}
+
+					extcommunity6    = (void *) (ibuf+pos+off);
+					extcommunitylen6 = codelen / 20;
+				}
+
+				if ( a[BGP_ATTR_LARGECOMMUNITY].pos != 0xffff && config.export & EXPORT_LARGECOMMUNITY )
+				{
+					uint16_t off = a[BGP_ATTR_LARGECOMMUNITY].pos;
+					uint16_t codelen = a[BGP_ATTR_LARGECOMMUNITY].len;
+
+					if ( ( codelen % 12 ) != 0 )
+					{
+						snprintf(logline, sizeof(logline), "%s error in large community length\n",
+							peer[id].af == 4 ? p_tools_ip4str(id, &peer[id].ip4) : p_tools_ip6str(id, &peer[id].ip6) );
+						p_log_add((time_t)ts.tv_sec, logline);
+						peer[id].status = 0;
+						return;
+					}
+
+					largecommunity    = (void *) (ibuf+pos+off);
+					largecommunitylen = codelen / 12;
 				}
 
 				if ( a[BGP_ATTR_MP_REACH_NLRI].pos != 0xffff )
@@ -991,19 +1054,12 @@ void p_main_peer_work(char *ibuf, char *obuf, int id)
 							}
 							#endif
 
-							p_dump_add_announce6(
-								peer,
-								id,
-								ts.tv_sec,
-								prefix6,
-								plen,
-								origin,
-								aspath,
-								aspathlen,
-								community,
-								communitylen,
-								extcommunity,
-								extcommunitylen );
+							p_dump_add_announce6( peer, id, ts.tv_sec, prefix6, plen, origin,
+								aspath,         aspathlen,
+								community,      communitylen,
+								extcommunity6,  extcommunitylen6,
+								largecommunity, largecommunitylen );
+
 							peer[id].ucount++;
 						}
 
@@ -1140,9 +1196,10 @@ void p_main_peer_work(char *ibuf, char *obuf, int id)
 				#endif
 
 				p_dump_add_announce4(peer,id,ts.tv_sec,prefix,plen,origin,
-					aspath,       aspathlen,
-					community,    communitylen,
-					extcommunity, extcommunitylen );
+					aspath,         aspathlen,
+					community,      communitylen,
+					extcommunity4,  extcommunitylen4,
+					largecommunity, largecommunitylen );
 
 				peer[id].ucount++;
 			}
