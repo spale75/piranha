@@ -1,6 +1,6 @@
 /*******************************************************************************/
 /*                                                                             */
-/*  Copyright 2004-2017 Pascal Gloor                                                */
+/*  Copyright 2004-2017 Pascal Gloor                                           */
 /*                                                                             */
 /*  Licensed under the Apache License, Version 2.0 (the "License");            */
 /*  you may not use this file except in compliance with the License.           */
@@ -95,6 +95,10 @@
 #define BGP_MAXLEN_EXTCOMMUNITY4   8192
 #define BGP_MAXLEN_EXTCOMMUNITY6   3276
 #define BGP_MAXLEN_LARGECOMMUNITY  5461
+
+#define BGP_ORIGIN_IGP	0
+#define BGP_ORIGIN_EGP	1
+#define BGP_ORIGIN_UNKN	2
 
 #define EXPORT_ORIGIN         0x01
 #define EXPORT_ASPATH         0x02

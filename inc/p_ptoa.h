@@ -20,5 +20,11 @@ enum PTOA_MODE { PTOA_NONE, PTOA_HUMAN, PTOA_JSON, PTOA_MACHINE };
 
 
 int main(int argc, char *argv[]);
-void mytime(time_t ts);
+// void mytime(time_t ts);
 void syntax(char *prog);
+void print_origin(int mode, uint8_t origin);
+void print_aspath(int mode, struct dump_announce_aspath *aspath, uint8_t len);
+void print_community(int mode, struct dump_announce_community *community, uint16_t len);
+void print_extcommunity4(int mode, struct dump_announce_extcommunity4 *com, uint16_t len);
+void print_extcommunity6(int mode, struct dump_announce_extcommunity6 *com, uint16_t len);
+void print_largecommunity(int mode, struct dump_announce_largecommunity *com, uint16_t len);

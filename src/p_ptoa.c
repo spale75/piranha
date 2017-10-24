@@ -1,6 +1,6 @@
 /*******************************************************************************/
 /*                                                                             */
-/*  Copyright 2004-2017 Pascal Gloor                                                */
+/*  Copyright 2004-2017 Pascal Gloor                                           */
 /*                                                                             */
 /*  Licensed under the Apache License, Version 2.0 (the "License");            */
 /*  you may not use this file except in compliance with the License.           */
@@ -163,6 +163,7 @@ int main(int argc, char *argv[])
 				break;
 
 			case DUMP_ANNOUNCE4:
+
 				if ( mode == PTOA_MACHINE )
 					printf("A|%u|%u",msg.announce4.prefix, msg.announce4.mask);
 				else if ( mode == PTOA_JSON )
@@ -180,101 +181,20 @@ int main(int argc, char *argv[])
 				}
 
 				if ( msg.announce4.origin != 0xff )
-				{
-					if ( mode == PTOA_MACHINE )
-					{
-						char o = '?';
-						switch(msg.announce4.origin)
-						{
-							case 0: o = 'I'; break;
-							case 1: o = 'E'; break;
-							case 2: o = '?'; break;
-						}
-						printf("|O|%c", o);
-					}
-					else
-					{
-						char o[10];
-						switch(msg.announce4.origin)
-						{
-							case 0: sprintf(o, "IGP"); break;
-							case 1: sprintf(o, "EGP"); break;
-							case 2: sprintf(o, "Unknown"); break;
-							default: sprintf(o, "Error"); break;
-						}
-						if ( mode == PTOA_JSON )
-							printf(", \"origin\": \"%s\"", o);
-						else
-							printf(" origin %s", o);
-					}
-				}
+					print_origin(mode, msg.announce4.origin);
 
 				if ( msg.announce4.aspathlen > 0 )
-				{
-					int i;
-
-					if ( mode == PTOA_MACHINE )
-						printf("|AP|");
-					else if ( mode == PTOA_JSON )
-						printf(", \"aspath\": [ ");
-					else
-						printf(" aspath");
-
-					for(i=0; i<msg.announce4.aspathlen; i++)
-					{
-						if ( mode == PTOA_MACHINE )
-						{
-							printf("%u", msg.aspath.data[i]);
-							if ( i < msg.announce4.aspathlen-1 ) printf(" ");
-						}
-						else if ( mode == PTOA_JSON )
-						{
-							printf("%u", msg.aspath.data[i]);
-							if ( i < msg.announce4.aspathlen-1 ) printf(", ");
-						}
-						else
-						{
-							printf(" %u", msg.aspath.data[i]);
-						}
-					}
-
-					if ( mode == PTOA_JSON )
-						printf(" ]");
-	
-				}
+					print_aspath(mode, &msg.aspath, msg.announce4.aspathlen);
 
 				if ( msg.announce4.communitylen > 0 )
-				{
-					int i;
-	
-					if ( mode == PTOA_MACHINE )
-						printf("|C|");
-					else if ( mode == PTOA_JSON )
-						printf(", \"community\": [ ");
-					else
-						printf(" community");
-	
-					for(i=0; i<msg.announce4.communitylen; i++)
-					{
-						if ( mode == PTOA_MACHINE )
-						{
-							printf("%u:%u",msg.community.data[i].asn, msg.community.data[i].num);
-							if ( i < msg.announce4.communitylen-1) printf(" ");
-						}
-						else if ( mode == PTOA_JSON )
-						{
-							printf("\"%u:%u\"",msg.community.data[i].asn, msg.community.data[i].num);
-							if ( i < msg.announce4.communitylen-1) printf(", ");
-						}
-						else
-						{
-							printf(" %u:%u", msg.community.data[i].asn, msg.community.data[i].num);
-						}
-					}
+					print_community(mode, &msg.community, msg.announce4.communitylen);
 
-					if ( mode == PTOA_JSON )
-						printf(" ]");
-				}
+				if ( msg.announce4.extcommunitylen4 > 0 )
+					print_extcommunity4(mode, &msg.extcommunity4, msg.announce4.extcommunitylen4);
+
+				if ( msg.announce4.largecommunitylen > 0 )
+					print_largecommunity(mode, &msg.largecommunity, msg.announce4.largecommunitylen);
+
 
 				if ( mode == PTOA_JSON )
 					printf(" } }\n");
@@ -305,101 +225,19 @@ int main(int argc, char *argv[])
 				}
 
 				if ( msg.announce6.origin != 0xff )
-				{
-					if ( mode == PTOA_MACHINE )
-					{
-						char o = '?';
-						switch(msg.announce6.origin)
-						{
-							case 0: o = 'I'; break;
-							case 1: o = 'E'; break;
-							case 2: o = '?'; break;
-						}
-						printf("|O|%c", o);
-					}
-					else
-					{
-						char o[10];
-						switch(msg.announce6.origin)
-						{
-							case 0: sprintf(o, "IGP"); break;
-							case 1: sprintf(o, "EGP"); break;
-							case 2: sprintf(o, "Unknown"); break;
-							default: sprintf(o, "Error"); break;
-						}
-						if ( mode == PTOA_JSON )
-							printf(", \"origin\": \"%s\"", o);
-						else
-							printf(" origin %s", o);
-					}
-				}
+					print_origin(mode, msg.announce6.origin);
 
 				if ( msg.announce6.aspathlen > 0 )
-				{
-					int i;
-
-					if ( mode == PTOA_MACHINE )
-						printf("|AP|");
-					else if ( mode == PTOA_JSON )
-						printf(", \"aspath\": [ ");
-					else
-						printf(" aspath");
-
-					for(i=0; i<msg.announce6.aspathlen; i++)
-					{
-						if ( mode == PTOA_MACHINE )
-						{
-							printf("%u", msg.aspath.data[i]);
-							if ( i < msg.announce6.aspathlen-1 ) printf(" ");
-						}
-						else if ( mode == PTOA_JSON )
-						{
-							printf("%u", msg.aspath.data[i]);
-							if ( i < msg.announce6.aspathlen-1 ) printf(", ");
-						}
-						else
-						{
-							printf(" %u", msg.aspath.data[i]);
-						}
-					}
-
-					if ( mode == PTOA_JSON )
-						printf(" ]");
-	
-				}
+					print_aspath(mode, &msg.aspath, msg.announce6.aspathlen);
 
 				if ( msg.announce6.communitylen > 0 )
-				{
-					int i;
-	
-					if ( mode == PTOA_MACHINE )
-						printf("|C|");
-					else if ( mode == PTOA_JSON )
-						printf(", \"community\": [ ");
-					else
-						printf(" community");
-	
-					for(i=0; i<msg.announce6.communitylen; i++)
-					{
-						if ( mode == PTOA_MACHINE )
-						{
-							printf("%u:%u",msg.community.data[i].asn, msg.community.data[i].num);
-							if ( i < msg.announce6.communitylen-1 ) printf(" ");
-						}
-						else if ( mode == PTOA_JSON )
-						{
-							printf("\"%u:%u\"",msg.community.data[i].asn, msg.community.data[i].num);
-							if ( i < msg.announce6.communitylen-1 ) printf(", ");
-						}
-						else
-						{
-							printf(" %u:%u", msg.community.data[i].asn, msg.community.data[i].num);
-						}
-					}
+					print_community(mode, &msg.community, msg.announce6.communitylen);
 
-					if ( mode == PTOA_JSON )
-						printf(" ]");
-				}
+				if ( msg.announce6.extcommunitylen6 > 0 )
+					print_extcommunity6(mode, &msg.extcommunity6, msg.announce6.extcommunitylen6);
+
+				if ( msg.announce6.largecommunitylen > 0 )
+					print_largecommunity(mode, &msg.largecommunity, msg.announce6.largecommunitylen);
 
 				if ( mode == PTOA_JSON )
 					printf(" } }");
@@ -499,3 +337,147 @@ void syntax(char *prog)
 	
 	exit(-1);
 }
+
+void print_origin(int mode, uint8_t origin)
+{
+	char o = '?';
+	char oa[10];
+
+	switch(origin)
+	{
+		case BGP_ORIGIN_IGP:
+			o = 'I';
+			snprintf(oa, sizeof(oa), "IGP");
+			break;
+		case BGP_ORIGIN_EGP:
+			o = 'E';
+			snprintf(oa, sizeof(oa), "EGP");
+			break;
+		case BGP_ORIGIN_UNKN:
+			o = '?';
+			snprintf(oa, sizeof(oa), "Unknown");
+			break;
+		default:
+			o = '?';
+			snprintf(oa, sizeof(oa), "Error");
+			break;
+	}
+
+	switch(mode) {
+		case PTOA_MACHINE:
+			printf("|O|%c", o);
+			break;
+		case PTOA_HUMAN:
+			printf(" origin %s", oa);
+			break;
+		case PTOA_JSON:
+			printf(", \"origin\": \"%s\"", oa);
+			break;
+	}
+}
+
+
+void print_aspath(int mode, struct dump_announce_aspath *aspath, uint8_t len)
+{
+	int i;
+
+	switch(mode) {
+		case PTOA_MACHINE: printf("|AP|"); break;
+		case PTOA_HUMAN: printf(" aspath"); break;
+		case PTOA_JSON: printf(", \"aspath\": [ "); break;
+	}
+
+	for(i=0; i<len; i++)
+	{
+		switch(mode) {
+			case PTOA_MACHINE:
+				printf("%u", aspath->data[i]);
+				if ( i < len-1 ) printf(" ");
+				break;
+			case PTOA_HUMAN:
+				printf(" %u", aspath->data[i]);
+				break;
+			case PTOA_JSON:
+				printf("%u", aspath->data[i]);
+				if ( i < len-1 ) printf(", ");
+				break;
+		}
+	}
+}
+
+void print_community(int mode, struct dump_announce_community *community, uint16_t len)
+{
+	int i;
+
+	if ( mode == PTOA_MACHINE )
+		printf("|C|");
+	else if ( mode == PTOA_JSON )
+		printf(", \"community\": [ ");
+	else
+		printf(" community");
+
+	for(i=0; i<len; i++)
+	{
+		if ( mode == PTOA_MACHINE )
+		{
+			printf("%u:%u",community->data[i].asn, community->data[i].num);
+			if ( i < len-1) printf(" ");
+		}
+		else if ( mode == PTOA_JSON )
+		{
+			printf("\"%u:%u\"",community->data[i].asn, community->data[i].num);
+			if ( i < len-1) printf(", ");
+		}
+		else
+		{
+			printf(" %u:%u", community->data[i].asn, community->data[i].num);
+		}
+	}
+
+	if ( mode == PTOA_JSON )
+		printf(" ]");
+}
+
+void print_extcommunity4(int mode, struct dump_announce_extcommunity4 *com, uint16_t len)
+{
+	/* not yet implemented */
+}
+
+void print_extcommunity6(int mode, struct dump_announce_extcommunity6 *com, uint16_t len)
+{
+	/* not yet implemented */
+}
+
+void print_largecommunity(int mode, struct dump_announce_largecommunity *community, uint16_t len)
+{
+	int i;
+
+	if ( mode == PTOA_MACHINE )
+		printf("|LC|");
+	else if ( mode == PTOA_JSON )
+		printf(", \"largecommunity\": [ ");
+	else
+		printf(" largecommunity");
+
+	for(i=0; i<len; i++)
+	{
+		if ( mode == PTOA_MACHINE )
+		{
+			printf("%u:%u:%u",community->data[i].global, community->data[i].local1, community->data[i].local2);
+			if ( i < len-1) printf(" ");
+		}
+		else if ( mode == PTOA_JSON )
+		{
+			printf("\"%u:%u:%u\"",community->data[i].global, community->data[i].local1, community->data[i].local2);
+			if ( i < len-1) printf(", ");
+		}
+		else
+		{
+			printf(" %u:%u:%u", community->data[i].global, community->data[i].local1, community->data[i].local2);
+		}
+	}
+
+	if ( mode == PTOA_JSON )
+		printf(" ]");
+}
+
