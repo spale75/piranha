@@ -50,7 +50,7 @@ show_conf()
 write_conf()
 {
 	rm -f ${CONFIG}
-	for NAME in ARCH OS OSVER PREFIX DEBUG VERBOSE CC
+	for NAME in ARCH OS OSVER PREFIX DEBUG VERBOSE CC CCNAME
 	do
 		VALUE=`eval echo "\\$${NAME}"`
 		printf "%s=%s\n" ${NAME} ${VALUE} >> ${CONFIG}
@@ -74,10 +74,12 @@ detect_os()
 	OS=`uname -s | tr [a-z] [A-Z]`
 	OSVER=`uname -r`
 	ARCH=`uname -m`
+	CCNAME="GCC"
 	find_exec "gcc"
 	if [ -z "${EXE}" ]
 	then
 		find_exec "cc"
+		CCNAME="CC"
 	fi
 	CC=${EXE}
 

@@ -72,9 +72,9 @@
 
 #define BGP_DEFAULT_HOLD 180
 
-#define BGP_OPEN	1
-#define BGP_UPDATE	2
-#define BGP_ERROR	3
+#define BGP_OPEN		1
+#define BGP_UPDATE		2
+#define BGP_ERROR		3
 #define BGP_KEEPALIVE	4
 
 #define BGP_ATTR_ORIGIN				1
@@ -119,10 +119,6 @@
 #define DUMP_WITHDRAWN6  62
 
 #define DUMP_FOOTER     255
-
-#ifdef CC_SUNCC
-#pragma packed()
-#endif
 
 struct bgp_header
 {

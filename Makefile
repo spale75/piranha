@@ -45,7 +45,7 @@ PRINTF1=@printf "  %-7s %-25s\n"
 PRINTF2=@printf "  %-7s %-25s -> %s\n"
 
 
-CFLAGS=$(OPT) $(WARNINGS) $(INCLUDES) -DOS_$(OS) -DPATH='"$(PREFIX)"'
+CFLAGS=$(OPT) $(WARNINGS) $(INCLUDES) -DOS_$(OS) -DPATH='"$(PREFIX)"' -DCC_$(CCNAME)
 
 all: banner prepare $(BIN)/piranha $(BIN)/ptoa $(BIN)/piranhactl
 	$(PRINTF1) INFO "Compilation done"
