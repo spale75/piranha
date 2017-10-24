@@ -40,7 +40,7 @@ show_conf()
 	printf "\n"
 	printf "Detected Arch       : %s\n" ${ARCH}
 	printf "Detected OS         : %s %s\n" ${OS} ${OSVER}
-	printf "Detected Comiler    : %s\n" ${CC}
+	printf "Detected Compiler   : %s\n" ${CC}
 	printf "Installation prefix : %s\n" ${PREFIX}
 	onoff ${DEBUG}
 	printf "Debug code          : %s\n" ${onoff}
