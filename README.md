@@ -171,9 +171,9 @@ Piranha has one configuration file located in &lt;destination folder&gt;/etc/pir
     man -M <install dir>/man <ptoa|piranha|piranhactl|piranha.conf>
 
 ## Reading Piranha DUMP
-Piranha dumps the received BGP Updates into dump files located in &lt;install dir&gt;/var/dump/&lt;neighbor IP&gt;. Files are rotated by default every 60 seconds. If there was no BGP message during that time, the dump not created for performance reasons. The 60 seconds interval can be tuned prior to compilation in `inc/p_defs.h:#define DUMPINTERVAL 60`.
+Piranha dumps the received BGP Updates into dump files located in *&lt;install dir&gt;/var/dump/&lt;neighbor IP&gt;*. Files are rotated by default every 60 seconds. If there was no BGP message during that time, the dump not created for performance reasons. The 60 seconds interval can be tuned with an option of *./configure*
 Dump files ready to be read have the following format: `YYYYMMddhhmmss`.
-With the tool `<install dir>/bin/ptoa` data from the dump files can be exported in three different formats:
+With the tool *&lt;install dir&gt;/bin/ptoa* data from the dump files can be exported in three different formats:
 
 * `./ptoa -H <dump file>`: Human readable format
 * `./ptoa -m <dump file>`: Machine readable format
