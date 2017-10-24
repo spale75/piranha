@@ -36,7 +36,10 @@
 #define P_VER_PL "2"
 
 #define MAX_PEERS 128
+
+#ifndef DUMPINTERVAL
 #define DUMPINTERVAL 60
+#endif
 
 #if defined(OS_LINUX)
 #define MAX_KEY_LEN (TCP_MD5SIG_MAXKEYLEN+1)

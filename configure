@@ -2,6 +2,7 @@
 
 BIN_DEPS="mkdir rm cat sed cp chmod"
 
+DUMPINTERVAL=60
 PREFIX=/opt/piranha
 DEBUG=0
 VERBOSE=0
@@ -14,11 +15,12 @@ find_exec()
 
 usage()
 {
-	printf "Usage %s [--debug] [--verbose] [--prefix=/path] [--help]\n" $1
+	printf "Usage %s [--debug] [--verbose] [--prefix=</path/to/piranha>] [--dumpint=<seconds>] [--help]\n" $1
 	printf "  --help    : show help\n"
 	printf "  --debug   : enable debug code\n"
 	printf "  --verbose : enable verbose compilation\n"
-	printf "  --prefix  : set base installation directory (default: /usr/local)\n"
+	printf "  --prefix  : set base installation directory (default: /opt/piranha)\n"
+	printf "  --dumpint : set dump interval in seconds (default: 60)\n"
 	exit 0
 }
 
@@ -50,7 +52,7 @@ show_conf()
 write_conf()
 {
 	rm -f ${CONFIG}
-	for NAME in ARCH OS OSVER PREFIX DEBUG VERBOSE CC CCNAME
+	for NAME in ARCH OS OSVER PREFIX DEBUG VERBOSE CC CCNAME DUMPINTERVAL
 	do
 		VALUE=`eval echo "\\$${NAME}"`
 		printf "%s=%s\n" ${NAME} ${VALUE} >> ${CONFIG}
@@ -95,6 +97,11 @@ do
 	case $arg in
 		--prefix=*)
 		PREFIX=`echo -- "$arg" | awk -F= '{print $2}'`
+		;;
+		--dumpint=*)
+		DUMPINTERVAL=`echo -- "$arg" | awk -F= '{print $2}'`
+		echo "$DUMPINTERVAL" | egrep -q '^[0-9]+$' || { echo "ERROR: dump interval must be a number"; exit 1; }
+		echo "$DUMPINTERVAL" | egrep -q '^0$' && { echo "ERROR: dump interval cannot be 0"; exit 1; }
 		;;
 		--verbose)
 		VERBOSE=1
