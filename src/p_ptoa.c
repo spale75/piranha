@@ -403,6 +403,9 @@ void print_aspath(int mode, struct dump_announce_aspath *aspath, uint8_t len)
 				break;
 		}
 	}
+
+	if ( mode == PTOA_JSON )
+		printf(" ]");
 }
 
 void print_community(int mode, struct dump_announce_community *community, uint16_t len)
