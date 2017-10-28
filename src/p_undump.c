@@ -93,6 +93,7 @@ int p_undump_readmsg(struct dump_file_ctx *ctx, struct dump_full_msg *fmsg)
 	/* convert header fields */
 	msg.len = be16toh(msg.len);
 	msg.ts  = be64toh(msg.ts);
+	msg.uts = be64toh(msg.uts);
 	memcpy(&fmsg->msg, &msg, sizeof(msg));
 
 	#ifdef DEBUG

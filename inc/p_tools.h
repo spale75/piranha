@@ -9,4 +9,4 @@ char *p_tools_ip6str(int peerid, struct in6_addr *ip);
 
 void p_tools_dump(const char *desc, char *data, int len);
 
-void p_tools_humantime(char *line, size_t len, time_t ts);
+void p_tools_humantime(char *line, size_t len, struct timeval *ts);

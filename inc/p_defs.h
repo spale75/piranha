@@ -188,6 +188,7 @@ struct dump_msg
 	uint8_t type;
 	uint16_t len;
 	uint64_t ts;
+	uint64_t uts;
 #ifdef CC_GCC
 } __attribute__((packed));
 #else

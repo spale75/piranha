@@ -73,23 +73,27 @@ int main(int argc, char *argv[])
 		switch(mode) {
 			case PTOA_MACHINE:
 				{
-					unsigned long long int ts = msg.msg.ts;
-					printf("%llu|",ts);
+					unsigned long long int ts  = msg.msg.ts;
+					unsigned long long int uts = msg.msg.uts;
+					printf("%llu.%llu|",ts,uts);
 				}
 				break;
 			case PTOA_HUMAN:
 				{
 					char line[100];
-					time_t ts = msg.msg.ts;
+					struct timeval t;
+					t.tv_sec  = msg.msg.ts;
+					t.tv_usec = msg.msg.uts;
 
-					p_tools_humantime(line, sizeof(line), ts);
+					p_tools_humantime(line, sizeof(line), &t);
 					printf("%s ",line);
 				}
 				break;
 			case PTOA_JSON:
 				{
-					unsigned long long int ts = msg.msg.ts;
-					printf("{ \"timestamp\": %llu, ",ts);
+					unsigned long long int ts  = msg.msg.ts;
+					unsigned long long int uts = msg.msg.uts;
+					printf("{ \"timestamp\": %llu.%llu, ",ts, uts);
 				}
 		}
 
