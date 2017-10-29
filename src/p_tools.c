@@ -128,5 +128,5 @@ void p_tools_humantime(char *line, size_t len, struct timeval *ts)
 	struct tm *tm;
 	tm = gmtime(&ts->tv_sec);
 	strftime(line, len, "%Y-%m-%d %H:%M:%S", tm);
-	snprintf(line + strlen(line), len - strlen(line), ".%03u", ts->tv_usec / 1000);
+	snprintf(line + strlen(line), len - strlen(line), ".%03llu", (long long unsigned)ts->tv_usec / 1000);
 }
