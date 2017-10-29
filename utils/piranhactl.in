@@ -35,7 +35,7 @@ start)
 	then
 		if [ -r ${CONFIG} ]
 		then
-			test -r "${DUMP}" && rm -rf "${DUMP}"
+			test -r "${DUMP}" && rm -rf "${DUMP}/*"
 			${PIRANHA} ${CONFIG} && echo "ok";
 		else
 			echo "piranha fatal error, cannot find ${CONFIG}";
