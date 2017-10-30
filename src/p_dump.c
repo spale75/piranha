@@ -199,7 +199,7 @@ void p_dump_add_withdrawn6(struct peer_t *peer, int id, struct timeval *ts, uint
 /* log IPv4 bgp announce msg */
 void p_dump_add_announce4(struct peer_t *peer, int id, struct timeval *ts,
 			uint32_t prefix,      uint8_t mask,
-			uint8_t origin,
+			uint8_t origin,       uint32_t nexthop,
 			void *aspath,         uint16_t aspathlen,
 			void *community,      uint16_t communitylen,
 			void *extcommunity4,  uint16_t extcommunitylen4,
@@ -229,6 +229,7 @@ void p_dump_add_announce4(struct peer_t *peer, int id, struct timeval *ts,
 		announce.mask              = mask;
 		announce.prefix            = htobe32(prefix);
 		announce.origin            = origin;
+		announce.nexthop           = htobe32(nexthop);
 		announce.aspathlen         = aspathlen;
 		announce.communitylen      = communitylen;
 		announce.extcommunitylen4  = extcommunitylen4;
@@ -306,7 +307,7 @@ void p_dump_add_announce4(struct peer_t *peer, int id, struct timeval *ts,
 /* log IPv6 bgp announce msg */
 void p_dump_add_announce6(struct peer_t *peer, int id, struct timeval *ts,
 			uint8_t prefix[16],   uint8_t mask,
-			uint8_t origin,
+			uint8_t origin,       uint8_t nexthop[16],
 			void *aspath,         uint16_t aspathlen,
 			void *community,      uint16_t communitylen,
 			void *extcommunity6,  uint16_t extcommunitylen6,
@@ -336,6 +337,7 @@ void p_dump_add_announce6(struct peer_t *peer, int id, struct timeval *ts,
 		memcpy(announce.prefix, prefix, sizeof(announce.prefix));
 		announce.mask              = mask;
 		announce.origin            = origin;
+		memcpy(announce.nexthop, nexthop, sizeof(announce.nexthop));
 		announce.aspathlen         = aspathlen;
 		announce.communitylen      = communitylen;
 		announce.extcommunitylen6  = extcommunitylen6;

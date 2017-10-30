@@ -706,6 +706,7 @@ void p_main_peer_work(char *ibuf, char *obuf, int id)
 			uint16_t  wlen;
 			uint16_t  alen;
 			uint8_t   origin            = 0xff;
+			uint32_t  nexthop           = 0xffffff;
 			void     *aspath            = NULL;
 			uint16_t  aspathlen         = 0;
 			void     *community         = NULL;
@@ -879,6 +880,21 @@ void p_main_peer_work(char *ibuf, char *obuf, int id)
 						#endif
 					}
 				}
+
+				if ( a[BGP_ATTR_NEXT_HOP].pos != 0xffff && config.export & EXPORT_NEXT_HOP )
+				{
+					uint16_t off     = a[BGP_ATTR_NEXT_HOP].pos;
+					uint16_t codelen = a[BGP_ATTR_NEXT_HOP].len;
+
+					if ( codelen == 4 )
+					{
+						nexthop = *(uint32_t*) (ibuf+pos+off);
+						#ifdef DEBUG
+						printf("NEXT_HOP: %s\n", p_tools_ip4str(id, (ibuf+pos+off)) );
+						#endif
+					}
+				}
+
 				if ( a[BGP_ATTR_AS_PATH].pos != 0xffff && config.export & EXPORT_ASPATH )
 				{
 					uint16_t off     = a[BGP_ATTR_AS_PATH].pos;
@@ -1018,15 +1034,21 @@ void p_main_peer_work(char *ibuf, char *obuf, int id)
 				{
 					uint16_t off     = a[BGP_ATTR_MP_REACH_NLRI].pos;
 					uint16_t codelen = a[BGP_ATTR_MP_REACH_NLRI].len;
-					int         i = 0;
-					uint16_t  afi = ntohs(*(uint16_t*) (ibuf+pos+off));
-					uint8_t  safi = *(uint8_t*) (ibuf+pos+off+2);
-					uint8_t nhlen = *(uint8_t*) (ibuf+pos+off+3);
+					int         i    = 0;
+					uint16_t  afi    = ntohs(*(uint16_t*) (ibuf+pos+off));
+					uint8_t  safi    = *(uint8_t*) (ibuf+pos+off+2);
+					uint8_t nhlen    = *(uint8_t*) (ibuf+pos+off+3);
+					uint8_t nh[16];
+
+					memset(nh, 0xff, sizeof(nh));
 
 					i += 4 + nhlen + 1;
 
 					if ( afi == 2 && safi == 1) /* IPv6 Unicast */
 					{
+						if ( config.export & EXPORT_NEXT_HOP )
+							memcpy(nh, ibuf+pos+off+4, nhlen);
+
 						while(i<codelen)
 						{
 							uint8_t plen = *(uint8_t*) (ibuf+pos+off+i);
@@ -1062,7 +1084,7 @@ void p_main_peer_work(char *ibuf, char *obuf, int id)
 							}
 							#endif
 
-							p_dump_add_announce6( peer, id, &msgtime, prefix6, plen, origin,
+							p_dump_add_announce6( peer, id, &msgtime, prefix6, plen, origin, nh,
 								aspath,         aspathlen,
 								community,      communitylen,
 								extcommunity6,  extcommunitylen6,
@@ -1203,7 +1225,7 @@ void p_main_peer_work(char *ibuf, char *obuf, int id)
 				}
 				#endif
 
-				p_dump_add_announce4(peer,id, &msgtime, prefix, plen, origin,
+				p_dump_add_announce4(peer,id, &msgtime, prefix, plen, origin, nexthop,
 					aspath,         aspathlen,
 					community,      communitylen,
 					extcommunity4,  extcommunitylen4,

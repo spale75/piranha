@@ -192,6 +192,8 @@ int p_config_load(struct config_t *config, struct peer_t *peer, uint32_t mytime)
 					config->export |= EXPORT_EXTCOMMUNITY;
 				else if ( ! strcmp(s, "largecommunity") )
 					config->export |= EXPORT_LARGECOMMUNITY;
+				else if ( ! strcmp(s, "nexthop") )
+					config->export |= EXPORT_NEXT_HOP;
 				#ifdef DEBUG
 				else
 					printf("DEBUG: Unknown export %s\n", s);

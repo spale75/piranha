@@ -23,6 +23,8 @@ int main(int argc, char *argv[]);
 // void mytime(time_t ts);
 void syntax(char *prog);
 void print_origin(int mode, uint8_t origin);
+void print_nexthop4(int mode, uint32_t nexthop);
+void print_nexthop6(int mode, uint8_t nexthop[16]);
 void print_aspath(int mode, struct dump_announce_aspath *aspath, uint8_t len);
 void print_community(int mode, struct dump_announce_community *community, uint16_t len);
 void print_extcommunity4(int mode, struct dump_announce_extcommunity4 *com, uint16_t len);

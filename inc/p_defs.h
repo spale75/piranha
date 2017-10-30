@@ -111,6 +111,7 @@
 #define EXPORT_COMMUNITY      0x04
 #define EXPORT_EXTCOMMUNITY   0x08
 #define EXPORT_LARGECOMMUNITY 0x10
+#define EXPORT_NEXT_HOP       0x20
 
 #define DUMP_OPEN        10
 #define DUMP_CLOSE       11
@@ -245,6 +246,7 @@ struct dump_announce4
 	uint8_t  mask;
 	uint32_t prefix;
 	uint8_t  origin;
+	uint32_t nexthop;
 	uint8_t  aspathlen;
 	uint16_t communitylen;
 	uint16_t extcommunitylen4;
@@ -269,6 +271,7 @@ struct dump_announce6
 	uint8_t  mask;
 	uint8_t  prefix[16];
 	uint8_t  origin;
+	uint8_t  nexthop[16];
 	uint8_t  aspathlen;
 	uint16_t communitylen;
 	uint16_t extcommunitylen6;

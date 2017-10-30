@@ -132,6 +132,7 @@ Piranha has one configuration file located in &lt;destination folder&gt;/etc/pir
 
     # Export options: Choose which route attributes will be exported to the dump files
     export origin         # IGP/EGP/Unknown
+    export nexthop        # NEXT_HOP
     export aspath         # AS_PATH
     export community      # COMMUNITY
     export extcommunity   # EXTENDED COMMUNITY
@@ -187,21 +188,21 @@ With the tool *&lt;install dir&gt;/bin/ptoa* data from the dump files can be exp
 
 #### Human readable format
 
-    2017-10-21 21:31:54 peer ip 2a03:2260::5 AS 201701
+    2017-10-21 21:31:54 peer ip 2a03:2260::5 AS 201701 TYPE eBGP
     2017-10-21 21:31:54 prefix announce 2a06:dac0::/29 origin IGP aspath 201701 13030 25180 202939 community 5093:5349 6629:6885 7141:7397
     2017-10-21 21:31:55 eof
 
 #### Machine readable format
 
-    1508621514|P|2a03:2260::5|201701
+    1508621514|P|2a03:2260::5|201701|eBGP
     1508621514|A|2a06:dac0::|29|O|I|AP|201701 13030 25180 202939|C|5093:5349 5605:5861 6629:6885 7141:7397
     1508621515|E
 
 #### JSON format
 When decoding JSON, you must decode each line individually. Because dump file can have millions of routes, it would use too much resouces for the decoder to decode them at once. This is why there is one JSON object per line.
 
-    { "timestamp": 1508621514, "type": "peer", "msg": { "peer": { "proto": "ipv6", "ip": "2a03:2260::5", "asn": 201701 } } }
-    { "timestamp": 1508621514, "type": "announce", "msg": { "prefix": "2a06:dac0::/29", "origin": "IGP", "aspath": [ 201701, 13030, 25180, 202939 ], "community": [ "5093:5349", "5605:5861", "6629:6885", "7141:7397" ] } }
+    { "timestamp": 1508621514, "type": "peer", "msg": { "peer": { "proto": "ipv6", "ip": "2a03:2260::5", "asn": 201701, "type": "eBGP" } } }
+    { "timestamp": 1508621514, "type": "announce", "msg": { "prefix": "2a06:dac0::/29", "origin": "IGP", "nexthop": "2a06:ffff::1", "aspath": [ 201701, 13030, 25180, 202939 ], "community": [ "5093:5349", "5605:5861", "6629:6885", "7141:7397" ] } }
     { "timestamp": 1508621515, "type": "footer" }
 
 ### Message type tags in DUMPs
@@ -210,7 +211,7 @@ Colons can be used to align columns.
 | Human     | Machine | JSON | Description |
 |:----------|:--------|:----------|:---------------------------------------------------------------------------------------------------------------|
 | peer      | P       | peer      | First message in any dump describing the neighbor                                                              |
-| announce  | A       | announce  | BGP prefix announce, optional origin (O), aspath (AP), community (C) and extended community (EC) subcomponents |
+| announce  | A       | announce  | BGP prefix announce, optional origin (O), nexthop (NH), aspath (AP), community (C) and extended community (EC) subcomponents |
 | withdrawn | W       | withdrawn | BGP prefix withdrawn                                                                                           |
 | eof       | E       | footer    | Last message in any dump, has no other value                                                                   |
 

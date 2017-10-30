@@ -187,6 +187,9 @@ int main(int argc, char *argv[])
 				if ( msg.announce4.origin != 0xff )
 					print_origin(mode, msg.announce4.origin);
 
+				if ( msg.announce4.nexthop != 0xffffff )
+					print_nexthop4(mode, msg.announce4.nexthop);
+
 				if ( msg.announce4.aspathlen > 0 )
 					print_aspath(mode, &msg.aspath, msg.announce4.aspathlen);
 
@@ -230,6 +233,20 @@ int main(int argc, char *argv[])
 
 				if ( msg.announce6.origin != 0xff )
 					print_origin(mode, msg.announce6.origin);
+
+				{
+					int i;
+					int doit = 0;
+					for(i=0; i<16; i++) {
+						if ( msg.announce6.nexthop[i] != 0xff ) {
+							doit=1;
+							break;
+						}
+					}
+
+					if ( doit )
+						print_nexthop6(mode, msg.announce6.nexthop);
+				}
 
 				if ( msg.announce6.aspathlen > 0 )
 					print_aspath(mode, &msg.aspath, msg.announce6.aspathlen);
@@ -340,6 +357,44 @@ void syntax(char *prog)
 	printf("\n");
 	
 	exit(-1);
+}
+
+void print_nexthop4(int mode, uint32_t nexthop)
+{
+	struct in_addr addr;
+	addr.s_addr = htobe32(nexthop);
+
+	switch(mode)
+	{
+		case PTOA_MACHINE:
+			printf("|NH|%u", nexthop);
+			break;
+		case PTOA_HUMAN:
+			printf(" nexthop %s", inet_ntoa(addr));
+			break;
+		case PTOA_JSON:
+			printf(", \"nexthop\": \"%s\"", inet_ntoa(addr));
+			break;
+	}
+}
+
+void print_nexthop6(int mode, uint8_t nexthop[16])
+{
+	struct in6_addr addr;
+	memcpy(addr.s6_addr, nexthop, 16);
+
+	switch(mode)
+	{
+		case PTOA_MACHINE:
+			printf("|NH|%s", p_tools_ip6str(0, &addr));
+			break;
+		case PTOA_HUMAN:
+			printf(" nexthop %s", p_tools_ip6str(0, &addr));
+			break;
+		case PTOA_JSON:
+			printf(", \"nexthop\": \"%s\"", p_tools_ip6str(0, &addr));
+			break;
+	}
 }
 
 void print_origin(int mode, uint8_t origin)
