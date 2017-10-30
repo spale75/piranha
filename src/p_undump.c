@@ -113,15 +113,17 @@ int p_undump_readmsg(struct dump_file_ctx *ctx, struct dump_full_msg *fmsg)
 	if ( msg.type == DUMP_HEADER4 && !ctx->head )
 	{
 		struct dump_header4 *header = (struct dump_header4 *)(buffer);
-		fmsg->header4.ip = be32toh(header->ip);
-		fmsg->header4.as = be32toh(header->as);
+		fmsg->header4.ip   = be32toh(header->ip);
+		fmsg->header4.as   = be32toh(header->as);
+		fmsg->header4.type = header->type;
 		ctx->head=1;
 	}
 	else if ( msg.type == DUMP_HEADER6 && !ctx->head )
 	{
 		struct dump_header6 *header = (struct dump_header6 *)(buffer);
 		memcpy(fmsg->header6.ip,header->ip, sizeof(header->ip));
-		fmsg->header6.as = be32toh(header->as);
+		fmsg->header6.as   = be32toh(header->as);
+		fmsg->header4.type = header->type;
 		ctx->head=1;
 	}
 	else if ( msg.type == DUMP_OPEN && ctx->head )

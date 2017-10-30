@@ -275,11 +275,18 @@ int p_config_load(struct config_t *config, struct peer_t *peer, uint32_t mytime)
 
 	fclose(fd);
 
-	/* clearning no more allowed peers */
+
+	/* clearning no more allowed peers  *
+	 * and set session type (eBGP/iBGP) */
 	{
 		int a;
 		for(a=0; a<MAX_PEERS; a++)
 		{
+			if ( peer[a].as == config->as )
+				peer[a].type = BGP_TYPE_IBGP;
+			else
+				peer[a].type = BGP_TYPE_EBGP;
+
 			if ( peer[a].newallow == 0 )
 			{
 				peer[a].status = 0;

@@ -103,6 +103,9 @@
 #define BGP_ORIGIN_EGP	1
 #define BGP_ORIGIN_UNKN	2
 
+#define BGP_TYPE_IBGP	0
+#define BGP_TYPE_EBGP	1
+
 #define EXPORT_ORIGIN         0x01
 #define EXPORT_ASPATH         0x02
 #define EXPORT_COMMUNITY      0x04
@@ -199,6 +202,7 @@ struct dump_header4
 {
 	uint32_t ip;
 	uint32_t as;
+	uint8_t  type;
 #ifdef CC_GCC
 } __attribute__((packed));
 #else
@@ -207,8 +211,9 @@ struct dump_header4
 
 struct dump_header6
 {
-	uint8_t ip[16];
+	uint8_t  ip[16];
 	uint32_t as;
+	uint8_t  type;
 #ifdef CC_GCC
 } __attribute__((packed));
 #else
@@ -387,6 +392,7 @@ struct peer_t
 	uint8_t  allow;
 	uint8_t  newallow;         /* to avoid peer drop during reconfiguration */
 	uint8_t  status;           /* 0 offline, 1 connected, 2 authed */
+	uint8_t  type;             /* iBGP/eBGP */
 	uint32_t ucount;           /* bgp updates count */
 	union {
 		struct   in6_addr ip6;     /* peer IPv4 address */

@@ -101,19 +101,19 @@ int main(int argc, char *argv[])
 		{
 			case DUMP_HEADER4:
 				if ( mode == PTOA_MACHINE )
-					printf("P|%u|%u\n",msg.header4.ip,msg.header4.as);
+					printf("P|%u|%u|%c\n",msg.header4.ip,msg.header4.as,msg.header4.type == BGP_TYPE_IBGP ? 'i' : 'e');
 				else if ( mode == PTOA_JSON )
 				{
 					struct in_addr addr;
 					addr.s_addr = htobe32(msg.header4.ip);
-					printf("\"type\": \"peer\", \"msg\": { \"peer\": { \"proto\": \"ipv4\", \"ip\": \"%s\", \"asn\": %u } } }\n",
-						inet_ntoa(addr), msg.header4.as);
+					printf("\"type\": \"peer\", \"msg\": { \"peer\": { \"proto\": \"ipv4\", \"ip\": \"%s\", \"asn\": %u, \"type\": %s } } }\n",
+						inet_ntoa(addr), msg.header4.as, msg.header4.type == BGP_TYPE_IBGP ? "ibgp" : "ebgp" );
 				}
 				else
 				{
 					struct in_addr addr;
 					addr.s_addr = htobe32(msg.header4.ip);
-					printf("peer ip %s AS %u\n",inet_ntoa(addr),msg.header4.as);
+					printf("peer ip %s AS %u TYPE %s\n",inet_ntoa(addr),msg.header4.as,msg.header4.type == BGP_TYPE_IBGP ? "ibgp" : "ebgp");
 				}
 				break;
 
@@ -122,20 +122,20 @@ int main(int argc, char *argv[])
 				{
 					struct in6_addr addr;
 					memcpy(addr.s6_addr, msg.header6.ip, sizeof(msg.header6.ip));
-					printf("P|%s|%u\n",p_tools_ip6str(MAX_PEERS, &addr),msg.header6.as);
+					printf("P|%s|%u|%c\n",p_tools_ip6str(MAX_PEERS, &addr),msg.header6.as,msg.header6.type == BGP_TYPE_IBGP ? 'i' : 'e');
 				}
 				else if ( mode == PTOA_JSON )
 				{
 					struct in6_addr addr;
 					memcpy(addr.s6_addr, msg.header6.ip, sizeof(msg.header6.ip));
-					printf("\"type\": \"peer\", \"msg\": { \"peer\": { \"proto\": \"ipv6\", \"ip\": \"%s\", \"asn\": %u } } }\n",
-						p_tools_ip6str(MAX_PEERS, &addr),msg.header6.as);
+					printf("\"type\": \"peer\", \"msg\": { \"peer\": { \"proto\": \"ipv6\", \"ip\": \"%s\", \"asn\": %u, \"type\": %s } } }\n",
+						p_tools_ip6str(MAX_PEERS, &addr),msg.header6.as,msg.header6.type == BGP_TYPE_IBGP ? "ibgp" : "ebgp");
 				}
 				else
 				{
 					struct in6_addr addr;
 					memcpy(addr.s6_addr, msg.header6.ip, sizeof(msg.header6.ip));
-					printf("peer ip %s AS %u\n",p_tools_ip6str(MAX_PEERS, &addr),msg.header6.as);
+					printf("peer ip %s AS %u TYPE %s\n",p_tools_ip6str(MAX_PEERS, &addr),msg.header6.as,msg.header6.type == BGP_TYPE_IBGP ? "ibgp" : "ebgp");
 				}
 				break;
 

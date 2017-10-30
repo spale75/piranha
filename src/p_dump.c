@@ -460,8 +460,9 @@ void p_dump_add_header4(struct peer_t *peer, int id, struct timeval *ts)
 		msg.uts  = htobe64((uint64_t)ts->tv_usec);
 		msg.len  = htobe16(sizeof(header));
 
-		header.ip = peer[id].ip4.s_addr;
-		header.as = htobe32(peer[id].as);
+		header.ip   = peer[id].ip4.s_addr;
+		header.as   = htobe32(peer[id].as);
+		header.type = peer[id].type;
 
 		fwrite(&msg,    sizeof(msg),    1, peer[id].fh);
 		fwrite(&header, sizeof(header), 1, peer[id].fh);
@@ -482,7 +483,8 @@ void p_dump_add_header6(struct peer_t *peer, int id, struct timeval *ts)
 		msg.len  = htobe16(sizeof(header));
 
 		memcpy(header.ip, peer[id].ip6.s6_addr, sizeof(header.ip));
-		header.as = htobe32(peer[id].as);
+		header.as   = htobe32(peer[id].as);
+		header.type = peer[id].type;
 
 		fwrite(&msg,    sizeof(msg),    1, peer[id].fh);
 		fwrite(&header, sizeof(header), 1, peer[id].fh);
