@@ -106,7 +106,7 @@ int main(int argc, char *argv[])
 				{
 					struct in_addr addr;
 					addr.s_addr = htobe32(msg.header4.ip);
-					printf("\"type\": \"peer\", \"msg\": { \"peer\": { \"proto\": \"ipv4\", \"ip\": \"%s\", \"asn\": %u, \"type\": %s } } }\n",
+					printf("\"type\": \"peer\", \"msg\": { \"peer\": { \"proto\": \"ipv4\", \"ip\": \"%s\", \"asn\": %u, \"type\": \"%s\" } } }\n",
 						inet_ntoa(addr), msg.header4.as, msg.header4.type == BGP_TYPE_IBGP ? "ibgp" : "ebgp" );
 				}
 				else
@@ -128,7 +128,7 @@ int main(int argc, char *argv[])
 				{
 					struct in6_addr addr;
 					memcpy(addr.s6_addr, msg.header6.ip, sizeof(msg.header6.ip));
-					printf("\"type\": \"peer\", \"msg\": { \"peer\": { \"proto\": \"ipv6\", \"ip\": \"%s\", \"asn\": %u, \"type\": %s } } }\n",
+					printf("\"type\": \"peer\", \"msg\": { \"peer\": { \"proto\": \"ipv6\", \"ip\": \"%s\", \"asn\": %u, \"type\": \"%s\" } } }\n",
 						p_tools_ip6str(MAX_PEERS, &addr),msg.header6.as,msg.header6.type == BGP_TYPE_IBGP ? "ibgp" : "ebgp");
 				}
 				else
