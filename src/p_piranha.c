@@ -888,7 +888,7 @@ void p_main_peer_work(char *ibuf, char *obuf, int id)
 
 					if ( codelen == 4 )
 					{
-						nexthop = *(uint32_t*) (ibuf+pos+off);
+						nexthop = be32toh(*(uint32_t*) (ibuf+pos+off));
 						#ifdef DEBUG
 						printf("NEXT_HOP: %s\n", p_tools_ip4str(id, (ibuf+pos+off)) );
 						#endif
