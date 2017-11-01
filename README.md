@@ -163,7 +163,7 @@ Piranha has one configuration file located in &lt;destination folder&gt;/etc/pir
 
 ### Start/Stop/Restart
 
-    <install dir>/etc/piranhactl <start|restart|stop>
+    <install dir>/bin/piranhactl <start|restart|stop>
 
 ### Status (state of all neighbors)
 
