@@ -160,6 +160,7 @@ void *p_main_peer(void *data)
 	struct sockaddr_in  *addr4 = (struct sockaddr_in  *)&sockaddr;
 	struct sockaddr_in6 *addr6 = (struct sockaddr_in6 *)&sockaddr;
 	socklen_t socklen = sizeof(sockaddr);
+	struct timeval msgtime;
 
 	memcpy(&sock,data,sizeof(sock));
 
@@ -257,7 +258,8 @@ void *p_main_peer(void *data)
 	#endif
 
 	p_main_peer_loop(peerid);
-	p_dump_add_close(peer, peerid, ts.tv_sec);
+	gettimeofday(&msgtime, NULL);
+	p_dump_add_close(peer, peerid, &msgtime);
 
 	/* peer disconnected, lets wait a bit to avoid direct reconnection */
 	/* we'll wait DUMPINTERVAL time! */
@@ -278,6 +280,7 @@ void p_main_peer_loop(int id)
 	char *ibuf;
 	char *obuf;
 	uint8_t marker[16];
+	struct timeval msgtime;
 
 	{ int a; for(a=0; a<sizeof(marker); a++) { marker[a] = 0xff; } }
 
@@ -306,7 +309,8 @@ void p_main_peer_loop(int id)
 
 		if ( tlen == -1 )
 		{
-			p_dump_check_file(peer,id,ts.tv_sec);
+			gettimeofday(&msgtime, NULL);
+			p_dump_check_file(peer,id,&msgtime);
 			sleep(1);
 		}
 		else if ( tlen > 0 )
@@ -503,6 +507,7 @@ void p_main_peer_work(char *ibuf, char *obuf, int id)
 	{
 		int pos = 0;
 		struct bgp_header *header;
+		struct timeval msgtime;
 
 		if ( peer[id].ilen < sizeof(struct bgp_header) )
 		{
@@ -513,6 +518,7 @@ void p_main_peer_work(char *ibuf, char *obuf, int id)
 		}
 
 		header = (struct bgp_header*)ibuf;
+
 
 		if ( memcmp(header->marker, marker, sizeof(marker)) != 0 )
 		{
@@ -548,6 +554,8 @@ void p_main_peer_work(char *ibuf, char *obuf, int id)
 		peer[id].rmsg++;
 
 		peer[id].rts = ts.tv_sec;
+
+		gettimeofday(&msgtime, NULL);
 
 		/* BGP OPEN MSG */
 		if ( header->type == BGP_OPEN && peer[id].status == 1 )
@@ -689,7 +697,7 @@ void p_main_peer_work(char *ibuf, char *obuf, int id)
 
 			peer[id].status = 2;
 
-			p_dump_add_open(peer, id, ts.tv_sec);
+			p_dump_add_open(peer, id, &msgtime);
 
 		}
 		else if ( header->type == BGP_UPDATE && peer[id].status == 2 )
@@ -698,6 +706,7 @@ void p_main_peer_work(char *ibuf, char *obuf, int id)
 			uint16_t  wlen;
 			uint16_t  alen;
 			uint8_t   origin            = 0xff;
+			uint32_t  nexthop           = 0xffffff;
 			void     *aspath            = NULL;
 			uint16_t  aspathlen         = 0;
 			void     *community         = NULL;
@@ -775,7 +784,7 @@ void p_main_peer_work(char *ibuf, char *obuf, int id)
 				}
 				#endif
 
-				p_dump_add_withdrawn4(peer,id,ts.tv_sec,prefix,plen);
+				p_dump_add_withdrawn4(peer,id,&msgtime,prefix,plen);
 				peer[id].ucount++;
 			}
 
@@ -871,6 +880,21 @@ void p_main_peer_work(char *ibuf, char *obuf, int id)
 						#endif
 					}
 				}
+
+				if ( a[BGP_ATTR_NEXT_HOP].pos != 0xffff && config.export & EXPORT_NEXT_HOP )
+				{
+					uint16_t off     = a[BGP_ATTR_NEXT_HOP].pos;
+					uint16_t codelen = a[BGP_ATTR_NEXT_HOP].len;
+
+					if ( codelen == 4 )
+					{
+						nexthop = be32toh(*(uint32_t*) (ibuf+pos+off));
+						#ifdef DEBUG
+						printf("NEXT_HOP: %s\n", p_tools_ip4str(id, (ibuf+pos+off)) );
+						#endif
+					}
+				}
+
 				if ( a[BGP_ATTR_AS_PATH].pos != 0xffff && config.export & EXPORT_ASPATH )
 				{
 					uint16_t off     = a[BGP_ATTR_AS_PATH].pos;
@@ -1010,15 +1034,21 @@ void p_main_peer_work(char *ibuf, char *obuf, int id)
 				{
 					uint16_t off     = a[BGP_ATTR_MP_REACH_NLRI].pos;
 					uint16_t codelen = a[BGP_ATTR_MP_REACH_NLRI].len;
-					int         i = 0;
-					uint16_t  afi = ntohs(*(uint16_t*) (ibuf+pos+off));
-					uint8_t  safi = *(uint8_t*) (ibuf+pos+off+2);
-					uint8_t nhlen = *(uint8_t*) (ibuf+pos+off+3);
+					int         i    = 0;
+					uint16_t  afi    = ntohs(*(uint16_t*) (ibuf+pos+off));
+					uint8_t  safi    = *(uint8_t*) (ibuf+pos+off+2);
+					uint8_t nhlen    = *(uint8_t*) (ibuf+pos+off+3);
+					uint8_t nh[16];
+
+					memset(nh, 0xff, sizeof(nh));
 
 					i += 4 + nhlen + 1;
 
 					if ( afi == 2 && safi == 1) /* IPv6 Unicast */
 					{
+						if ( config.export & EXPORT_NEXT_HOP )
+							memcpy(nh, ibuf+pos+off+4, nhlen);
+
 						while(i<codelen)
 						{
 							uint8_t plen = *(uint8_t*) (ibuf+pos+off+i);
@@ -1054,7 +1084,7 @@ void p_main_peer_work(char *ibuf, char *obuf, int id)
 							}
 							#endif
 
-							p_dump_add_announce6( peer, id, ts.tv_sec, prefix6, plen, origin,
+							p_dump_add_announce6( peer, id, &msgtime, prefix6, plen, origin, nh,
 								aspath,         aspathlen,
 								community,      communitylen,
 								extcommunity6,  extcommunitylen6,
@@ -1122,7 +1152,7 @@ void p_main_peer_work(char *ibuf, char *obuf, int id)
 							p_dump_add_withdrawn6(
 								peer,
 								id,
-								ts.tv_sec,
+								&msgtime,
 								prefix6,
 								plen );
 							peer[id].ucount++;
@@ -1195,7 +1225,7 @@ void p_main_peer_work(char *ibuf, char *obuf, int id)
 				}
 				#endif
 
-				p_dump_add_announce4(peer,id,ts.tv_sec,prefix,plen,origin,
+				p_dump_add_announce4(peer,id, &msgtime, prefix, plen, origin, nexthop,
 					aspath,         aspathlen,
 					community,      communitylen,
 					extcommunity4,  extcommunitylen4,
@@ -1228,7 +1258,7 @@ void p_main_peer_work(char *ibuf, char *obuf, int id)
 		{
 			/* keepalive packet */
 			peer[id].rts = ts.tv_sec;
-			p_dump_add_keepalive(peer, id, ts.tv_sec);
+			p_dump_add_keepalive(peer, id, &msgtime);
 			#ifdef DEBUG
 			printf("received keepalive\n");
 			#endif

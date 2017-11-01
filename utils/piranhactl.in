@@ -2,7 +2,7 @@
 
 # /*******************************************************************************/
 # /*                                                                             */
-# /*  Copyright 2004-2017 Pascal Gloor                                                */
+# /*  Copyright 2004-2017 Pascal Gloor                                           */
 # /*                                                                             */
 # /*  Licensed under the Apache License, Version 2.0 (the "License");            */
 # /*  you may not use this file except in compliance with the License.           */
@@ -23,6 +23,7 @@ PIRANHA="${WDIR}/bin/piranha";
 CONFIG="${WDIR}/etc/piranha.conf";
 PIDFILE="${WDIR}/var/piranha.pid";
 PEERSFILE="${WDIR}/var/piranha.status";
+DUMP="${WDIR}/var/dump/";
 
 
 case "$1" in
@@ -34,6 +35,7 @@ start)
 	then
 		if [ -r ${CONFIG} ]
 		then
+			test -r "${DUMP}" && find "${DUMP}/" -depth -mindepth 1 -delete
 			${PIRANHA} ${CONFIG} && echo "ok";
 		else
 			echo "piranha fatal error, cannot find ${CONFIG}";

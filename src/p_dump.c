@@ -31,7 +31,7 @@
 #include <p_tools.h>
 
 /* opening file */
-void p_dump_open_file(struct peer_t *peer, int id, uint64_t ts)
+void p_dump_open_file(struct peer_t *peer, int id, struct timeval *ts)
 {
 	struct tm *tm;
 	struct stat sb;
@@ -39,7 +39,7 @@ void p_dump_open_file(struct peer_t *peer, int id, uint64_t ts)
 	char filename[1024];
 	char mytime[100];
 
-	peer[id].filets = ts - ( ts % DUMPINTERVAL );
+	peer[id].filets = ts->tv_sec - ( ts->tv_sec % DUMPINTERVAL );
 
 	tm = gmtime((time_t*)&peer[id].filets);
 	strftime(mytime, sizeof(mytime), "%Y%m%d%H%M%S" , tm);
@@ -71,7 +71,7 @@ void p_dump_open_file(struct peer_t *peer, int id, uint64_t ts)
 }
 
 /* log keepalive msg */
-void p_dump_add_keepalive(struct peer_t *peer, int id, uint64_t ts)
+void p_dump_add_keepalive(struct peer_t *peer, int id, struct timeval *ts)
 {
 	p_dump_check_file(peer,id,ts);
 
@@ -81,7 +81,8 @@ void p_dump_add_keepalive(struct peer_t *peer, int id, uint64_t ts)
 		struct dump_msg msg;
 
 		msg.type = DUMP_KEEPALIVE;
-		msg.ts   = htobe64(ts);
+		msg.ts   = htobe64((uint64_t)ts->tv_sec);
+		msg.uts  = htobe64((uint64_t)ts->tv_usec);
 		msg.len  = htobe16(0);
 
 		fwrite(&msg, sizeof(msg), 1, peer[id].fh);
@@ -89,7 +90,7 @@ void p_dump_add_keepalive(struct peer_t *peer, int id, uint64_t ts)
 }
 
 /* log session close */
-void p_dump_add_close(struct peer_t *peer, int id, uint64_t ts)
+void p_dump_add_close(struct peer_t *peer, int id, struct timeval *ts)
 {
 	if ( peer[id].fh == NULL ) { return; }
 	peer[id].empty = 0;
@@ -97,7 +98,8 @@ void p_dump_add_close(struct peer_t *peer, int id, uint64_t ts)
 		struct dump_msg msg;
 
 		msg.type = DUMP_CLOSE;
-		msg.ts   = htobe64(ts);
+		msg.ts   = htobe64((uint64_t)ts->tv_sec);
+		msg.uts  = htobe64((uint64_t)ts->tv_usec);
 		msg.len  = htobe16(0);
 
 		fwrite(&msg, sizeof(msg), 1, peer[id].fh);
@@ -107,7 +109,7 @@ void p_dump_add_close(struct peer_t *peer, int id, uint64_t ts)
 }
 
 /* log session open */
-void p_dump_add_open(struct peer_t *peer, int id, uint64_t ts)
+void p_dump_add_open(struct peer_t *peer, int id, struct timeval *ts)
 {
 	p_dump_check_file(peer,id,ts);
 
@@ -117,7 +119,8 @@ void p_dump_add_open(struct peer_t *peer, int id, uint64_t ts)
 		struct dump_msg msg;
 
 		msg.type = DUMP_OPEN;
-		msg.ts   = htobe64(ts);
+		msg.ts   = htobe64((uint64_t)ts->tv_sec);
+		msg.uts  = htobe64((uint64_t)ts->tv_usec);
 		msg.len  = htobe16(0);
 
 		fwrite(&msg, sizeof(msg), 1, peer[id].fh);
@@ -125,14 +128,15 @@ void p_dump_add_open(struct peer_t *peer, int id, uint64_t ts)
 }
 
 /* footer for each EOF */
-void p_dump_add_footer(struct peer_t *peer, int id, uint64_t ts)
+void p_dump_add_footer(struct peer_t *peer, int id, struct timeval *ts)
 {
 	if ( peer[id].fh == NULL ) { return; }
 	{
 		struct dump_msg msg;
 
 		msg.type = DUMP_FOOTER;
-		msg.ts   = htobe64(ts);
+		msg.ts   = htobe64((uint64_t)ts->tv_sec);
+		msg.uts  = htobe64((uint64_t)ts->tv_usec);
 		msg.len  = htobe64(0);
 
 		fwrite(&msg, sizeof(msg), 1, peer[id].fh);
@@ -140,7 +144,7 @@ void p_dump_add_footer(struct peer_t *peer, int id, uint64_t ts)
 }
 
 /* log bgp IPv4 withdrawn msg */
-void p_dump_add_withdrawn4(struct peer_t *peer, int id, uint64_t ts, uint32_t prefix, uint8_t mask)
+void p_dump_add_withdrawn4(struct peer_t *peer, int id, struct timeval *ts, uint32_t prefix, uint8_t mask)
 {
 	p_dump_check_file(peer,id,ts);
 
@@ -151,7 +155,8 @@ void p_dump_add_withdrawn4(struct peer_t *peer, int id, uint64_t ts, uint32_t pr
 		struct dump_withdrawn4 withdrawn;
 
 		msg.type = DUMP_WITHDRAWN4;
-		msg.ts   = htobe64(ts);
+		msg.ts   = htobe64((uint64_t)ts->tv_sec);
+		msg.uts  = htobe64((uint64_t)ts->tv_usec);
 
 		withdrawn.mask   = mask;
 		withdrawn.prefix = htobe32(prefix);
@@ -165,7 +170,7 @@ void p_dump_add_withdrawn4(struct peer_t *peer, int id, uint64_t ts, uint32_t pr
 }
 
 /* log bgp IPv6 withdrawn msg */
-void p_dump_add_withdrawn6(struct peer_t *peer, int id, uint64_t ts, uint8_t prefix[16], uint8_t mask)
+void p_dump_add_withdrawn6(struct peer_t *peer, int id, struct timeval *ts, uint8_t prefix[16], uint8_t mask)
 {
 	p_dump_check_file(peer,id,ts);
 
@@ -176,7 +181,8 @@ void p_dump_add_withdrawn6(struct peer_t *peer, int id, uint64_t ts, uint8_t pre
 		struct dump_withdrawn6 withdrawn;
 
 		msg.type = DUMP_WITHDRAWN6;
-		msg.ts   = htobe64(ts);
+		msg.ts   = htobe64((uint64_t)ts->tv_sec);
+		msg.uts  = htobe64((uint64_t)ts->tv_usec);
 
 		withdrawn.mask   = mask;
 
@@ -191,9 +197,9 @@ void p_dump_add_withdrawn6(struct peer_t *peer, int id, uint64_t ts, uint8_t pre
 }
 
 /* log IPv4 bgp announce msg */
-void p_dump_add_announce4(struct peer_t *peer, int id, uint64_t ts,
+void p_dump_add_announce4(struct peer_t *peer, int id, struct timeval *ts,
 			uint32_t prefix,      uint8_t mask,
-			uint8_t origin,
+			uint8_t origin,       uint32_t nexthop,
 			void *aspath,         uint16_t aspathlen,
 			void *community,      uint16_t communitylen,
 			void *extcommunity4,  uint16_t extcommunitylen4,
@@ -212,7 +218,8 @@ void p_dump_add_announce4(struct peer_t *peer, int id, uint64_t ts,
 		struct dump_announce_largecommunity opt_largecommunity;
 
 		msg.type = DUMP_ANNOUNCE4;
-		msg.ts   = htobe64(ts);
+		msg.ts   = htobe64((uint64_t)ts->tv_sec);
+		msg.uts  = htobe64((uint64_t)ts->tv_usec);
 		msg.len  = htobe16(sizeof(announce)
 			+ sizeof(opt_aspath.data[0]) * aspathlen 
 			+ sizeof(opt_community.data[0]) * communitylen
@@ -222,6 +229,7 @@ void p_dump_add_announce4(struct peer_t *peer, int id, uint64_t ts,
 		announce.mask              = mask;
 		announce.prefix            = htobe32(prefix);
 		announce.origin            = origin;
+		announce.nexthop           = htobe32(nexthop);
 		announce.aspathlen         = aspathlen;
 		announce.communitylen      = communitylen;
 		announce.extcommunitylen4  = extcommunitylen4;
@@ -297,9 +305,9 @@ void p_dump_add_announce4(struct peer_t *peer, int id, uint64_t ts,
 	}
 }
 /* log IPv6 bgp announce msg */
-void p_dump_add_announce6(struct peer_t *peer, int id, uint64_t ts,
+void p_dump_add_announce6(struct peer_t *peer, int id, struct timeval *ts,
 			uint8_t prefix[16],   uint8_t mask,
-			uint8_t origin,
+			uint8_t origin,       uint8_t nexthop[16],
 			void *aspath,         uint16_t aspathlen,
 			void *community,      uint16_t communitylen,
 			void *extcommunity6,  uint16_t extcommunitylen6,
@@ -318,7 +326,8 @@ void p_dump_add_announce6(struct peer_t *peer, int id, uint64_t ts,
 		struct dump_announce_largecommunity opt_largecommunity;
 
 		msg.type = DUMP_ANNOUNCE6;
-		msg.ts   = htobe64(ts);
+		msg.ts   = htobe64((uint64_t)ts->tv_sec);
+		msg.uts  = htobe64((uint64_t)ts->tv_usec);
 		msg.len  = htobe16( sizeof(announce)
 			+ sizeof(opt_aspath.data[0]) * aspathlen 
 			+ sizeof(opt_community.data[0]) * communitylen
@@ -328,6 +337,7 @@ void p_dump_add_announce6(struct peer_t *peer, int id, uint64_t ts,
 		memcpy(announce.prefix, prefix, sizeof(announce.prefix));
 		announce.mask              = mask;
 		announce.origin            = origin;
+		memcpy(announce.nexthop, nexthop, sizeof(announce.nexthop));
 		announce.aspathlen         = aspathlen;
 		announce.communitylen      = communitylen;
 		announce.extcommunitylen6  = extcommunitylen6;
@@ -405,9 +415,9 @@ void p_dump_add_announce6(struct peer_t *peer, int id, uint64_t ts,
 }
 
 /* check if need to reopen a new file */
-void p_dump_check_file(struct peer_t *peer, int id, uint64_t ts)
+void p_dump_check_file(struct peer_t *peer, int id, struct timeval *ts)
 {
-	uint64_t mts = ts - ( ts % DUMPINTERVAL );
+	uint64_t mts = ts->tv_sec - ( ts->tv_sec % DUMPINTERVAL );
 
 	if ( mts == peer[id].filets && peer[id].fh != NULL ) { return; }
 
@@ -440,7 +450,7 @@ void p_dump_check_file(struct peer_t *peer, int id, uint64_t ts)
 }
 
 /* file header */
-void p_dump_add_header4(struct peer_t *peer, int id, uint64_t ts)
+void p_dump_add_header4(struct peer_t *peer, int id, struct timeval *ts)
 {
 	if ( peer[id].fh == NULL ) { return; }
 	{
@@ -448,11 +458,13 @@ void p_dump_add_header4(struct peer_t *peer, int id, uint64_t ts)
 		struct dump_header4 header;
 
 		msg.type = DUMP_HEADER4;
-		msg.ts   = htobe64(ts);
+		msg.ts   = htobe64((uint64_t)ts->tv_sec);
+		msg.uts  = htobe64((uint64_t)ts->tv_usec);
 		msg.len  = htobe16(sizeof(header));
 
-		header.ip = peer[id].ip4.s_addr;
-		header.as = htobe32(peer[id].as);
+		header.ip   = peer[id].ip4.s_addr;
+		header.as   = htobe32(peer[id].as);
+		header.type = peer[id].type;
 
 		fwrite(&msg,    sizeof(msg),    1, peer[id].fh);
 		fwrite(&header, sizeof(header), 1, peer[id].fh);
@@ -460,7 +472,7 @@ void p_dump_add_header4(struct peer_t *peer, int id, uint64_t ts)
 }
 
 /* file header */
-void p_dump_add_header6(struct peer_t *peer, int id, uint64_t ts)
+void p_dump_add_header6(struct peer_t *peer, int id, struct timeval *ts)
 {
 	if ( peer[id].fh == NULL ) { return; }
 	{
@@ -468,11 +480,13 @@ void p_dump_add_header6(struct peer_t *peer, int id, uint64_t ts)
 		struct dump_header6 header;
 
 		msg.type = DUMP_HEADER6;
-		msg.ts   = htobe64(ts);
+		msg.ts   = htobe64((uint64_t)ts->tv_sec);
+		msg.uts  = htobe64((uint64_t)ts->tv_usec);
 		msg.len  = htobe16(sizeof(header));
 
 		memcpy(header.ip, peer[id].ip6.s6_addr, sizeof(header.ip));
-		header.as = htobe32(peer[id].as);
+		header.as   = htobe32(peer[id].as);
+		header.type = peer[id].type;
 
 		fwrite(&msg,    sizeof(msg),    1, peer[id].fh);
 		fwrite(&header, sizeof(header), 1, peer[id].fh);

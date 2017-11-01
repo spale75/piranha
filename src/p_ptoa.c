@@ -73,23 +73,27 @@ int main(int argc, char *argv[])
 		switch(mode) {
 			case PTOA_MACHINE:
 				{
-					unsigned long long int ts = msg.msg.ts;
-					printf("%llu|",ts);
+					unsigned long long int ts  = msg.msg.ts;
+					unsigned long long int uts = msg.msg.uts;
+					printf("%llu.%llu|",ts,uts);
 				}
 				break;
 			case PTOA_HUMAN:
 				{
 					char line[100];
-					time_t ts = msg.msg.ts;
+					struct timeval t;
+					t.tv_sec  = msg.msg.ts;
+					t.tv_usec = msg.msg.uts;
 
-					p_tools_humantime(line, sizeof(line), ts);
+					p_tools_humantime(line, sizeof(line), &t);
 					printf("%s ",line);
 				}
 				break;
 			case PTOA_JSON:
 				{
-					unsigned long long int ts = msg.msg.ts;
-					printf("{ \"timestamp\": %llu, ",ts);
+					unsigned long long int ts  = msg.msg.ts;
+					unsigned long long int uts = msg.msg.uts;
+					printf("{ \"timestamp\": %llu.%llu, ",ts, uts);
 				}
 		}
 
@@ -97,19 +101,19 @@ int main(int argc, char *argv[])
 		{
 			case DUMP_HEADER4:
 				if ( mode == PTOA_MACHINE )
-					printf("P|%u|%u\n",msg.header4.ip,msg.header4.as);
+					printf("P|%u|%u|%c\n",msg.header4.ip,msg.header4.as,msg.header4.type == BGP_TYPE_IBGP ? 'i' : 'e');
 				else if ( mode == PTOA_JSON )
 				{
 					struct in_addr addr;
 					addr.s_addr = htobe32(msg.header4.ip);
-					printf("\"type\": \"peer\", \"msg\": { \"peer\": { \"proto\": \"ipv4\", \"ip\": \"%s\", \"asn\": %u } } }\n",
-						inet_ntoa(addr), msg.header4.as);
+					printf("\"type\": \"peer\", \"msg\": { \"peer\": { \"proto\": \"ipv4\", \"ip\": \"%s\", \"asn\": %u, \"type\": \"%s\" } } }\n",
+						inet_ntoa(addr), msg.header4.as, msg.header4.type == BGP_TYPE_IBGP ? "ibgp" : "ebgp" );
 				}
 				else
 				{
 					struct in_addr addr;
 					addr.s_addr = htobe32(msg.header4.ip);
-					printf("peer ip %s AS %u\n",inet_ntoa(addr),msg.header4.as);
+					printf("peer ip %s AS %u TYPE %s\n",inet_ntoa(addr),msg.header4.as,msg.header4.type == BGP_TYPE_IBGP ? "ibgp" : "ebgp");
 				}
 				break;
 
@@ -118,20 +122,20 @@ int main(int argc, char *argv[])
 				{
 					struct in6_addr addr;
 					memcpy(addr.s6_addr, msg.header6.ip, sizeof(msg.header6.ip));
-					printf("P|%s|%u\n",p_tools_ip6str(MAX_PEERS, &addr),msg.header6.as);
+					printf("P|%s|%u|%c\n",p_tools_ip6str(MAX_PEERS, &addr),msg.header6.as,msg.header6.type == BGP_TYPE_IBGP ? 'i' : 'e');
 				}
 				else if ( mode == PTOA_JSON )
 				{
 					struct in6_addr addr;
 					memcpy(addr.s6_addr, msg.header6.ip, sizeof(msg.header6.ip));
-					printf("\"type\": \"peer\", \"msg\": { \"peer\": { \"proto\": \"ipv6\", \"ip\": \"%s\", \"asn\": %u } } }\n",
-						p_tools_ip6str(MAX_PEERS, &addr),msg.header6.as);
+					printf("\"type\": \"peer\", \"msg\": { \"peer\": { \"proto\": \"ipv6\", \"ip\": \"%s\", \"asn\": %u, \"type\": \"%s\" } } }\n",
+						p_tools_ip6str(MAX_PEERS, &addr),msg.header6.as,msg.header6.type == BGP_TYPE_IBGP ? "ibgp" : "ebgp");
 				}
 				else
 				{
 					struct in6_addr addr;
 					memcpy(addr.s6_addr, msg.header6.ip, sizeof(msg.header6.ip));
-					printf("peer ip %s AS %u\n",p_tools_ip6str(MAX_PEERS, &addr),msg.header6.as);
+					printf("peer ip %s AS %u TYPE %s\n",p_tools_ip6str(MAX_PEERS, &addr),msg.header6.as,msg.header6.type == BGP_TYPE_IBGP ? "ibgp" : "ebgp");
 				}
 				break;
 
@@ -183,6 +187,9 @@ int main(int argc, char *argv[])
 				if ( msg.announce4.origin != 0xff )
 					print_origin(mode, msg.announce4.origin);
 
+				if ( msg.announce4.nexthop != 0xffffff )
+					print_nexthop4(mode, msg.announce4.nexthop);
+
 				if ( msg.announce4.aspathlen > 0 )
 					print_aspath(mode, &msg.aspath, msg.announce4.aspathlen);
 
@@ -226,6 +233,20 @@ int main(int argc, char *argv[])
 
 				if ( msg.announce6.origin != 0xff )
 					print_origin(mode, msg.announce6.origin);
+
+				{
+					int i;
+					int doit = 0;
+					for(i=0; i<16; i++) {
+						if ( msg.announce6.nexthop[i] != 0xff ) {
+							doit=1;
+							break;
+						}
+					}
+
+					if ( doit )
+						print_nexthop6(mode, msg.announce6.nexthop);
+				}
 
 				if ( msg.announce6.aspathlen > 0 )
 					print_aspath(mode, &msg.aspath, msg.announce6.aspathlen);
@@ -336,6 +357,44 @@ void syntax(char *prog)
 	printf("\n");
 	
 	exit(-1);
+}
+
+void print_nexthop4(int mode, uint32_t nexthop)
+{
+	struct in_addr addr;
+	addr.s_addr = htobe32(nexthop);
+
+	switch(mode)
+	{
+		case PTOA_MACHINE:
+			printf("|NH|%u", nexthop);
+			break;
+		case PTOA_HUMAN:
+			printf(" nexthop %s", inet_ntoa(addr));
+			break;
+		case PTOA_JSON:
+			printf(", \"nexthop\": \"%s\"", inet_ntoa(addr));
+			break;
+	}
+}
+
+void print_nexthop6(int mode, uint8_t nexthop[16])
+{
+	struct in6_addr addr;
+	memcpy(addr.s6_addr, nexthop, 16);
+
+	switch(mode)
+	{
+		case PTOA_MACHINE:
+			printf("|NH|%s", p_tools_ip6str(0, &addr));
+			break;
+		case PTOA_HUMAN:
+			printf(" nexthop %s", p_tools_ip6str(0, &addr));
+			break;
+		case PTOA_JSON:
+			printf(", \"nexthop\": \"%s\"", p_tools_ip6str(0, &addr));
+			break;
+	}
 }
 
 void print_origin(int mode, uint8_t origin)

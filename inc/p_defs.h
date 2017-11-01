@@ -103,11 +103,15 @@
 #define BGP_ORIGIN_EGP	1
 #define BGP_ORIGIN_UNKN	2
 
+#define BGP_TYPE_IBGP	0
+#define BGP_TYPE_EBGP	1
+
 #define EXPORT_ORIGIN         0x01
 #define EXPORT_ASPATH         0x02
 #define EXPORT_COMMUNITY      0x04
 #define EXPORT_EXTCOMMUNITY   0x08
 #define EXPORT_LARGECOMMUNITY 0x10
+#define EXPORT_NEXT_HOP       0x20
 
 #define DUMP_OPEN        10
 #define DUMP_CLOSE       11
@@ -188,6 +192,7 @@ struct dump_msg
 	uint8_t type;
 	uint16_t len;
 	uint64_t ts;
+	uint64_t uts;
 #ifdef CC_GCC
 } __attribute__((packed));
 #else
@@ -198,6 +203,7 @@ struct dump_header4
 {
 	uint32_t ip;
 	uint32_t as;
+	uint8_t  type;
 #ifdef CC_GCC
 } __attribute__((packed));
 #else
@@ -206,8 +212,9 @@ struct dump_header4
 
 struct dump_header6
 {
-	uint8_t ip[16];
+	uint8_t  ip[16];
 	uint32_t as;
+	uint8_t  type;
 #ifdef CC_GCC
 } __attribute__((packed));
 #else
@@ -239,6 +246,7 @@ struct dump_announce4
 	uint8_t  mask;
 	uint32_t prefix;
 	uint8_t  origin;
+	uint32_t nexthop;
 	uint8_t  aspathlen;
 	uint16_t communitylen;
 	uint16_t extcommunitylen4;
@@ -263,6 +271,7 @@ struct dump_announce6
 	uint8_t  mask;
 	uint8_t  prefix[16];
 	uint8_t  origin;
+	uint8_t  nexthop[16];
 	uint8_t  aspathlen;
 	uint16_t communitylen;
 	uint16_t extcommunitylen6;
@@ -386,6 +395,7 @@ struct peer_t
 	uint8_t  allow;
 	uint8_t  newallow;         /* to avoid peer drop during reconfiguration */
 	uint8_t  status;           /* 0 offline, 1 connected, 2 authed */
+	uint8_t  type;             /* iBGP/eBGP */
 	uint32_t ucount;           /* bgp updates count */
 	union {
 		struct   in6_addr ip6;     /* peer IPv4 address */
