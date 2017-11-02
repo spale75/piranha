@@ -4,6 +4,12 @@
 
 ### A highly efficient, multi-threaded, BGP route collector written in C.
 
+# Patreon
+
+Help me develop Piranha by donating at [Patreon](https://patreon.com/piranha).
+
+# About
+
 Piranha collects routes and dumps them into files for the purpose of analysis.
 Piranha is NOT a BGP router and does NOT have the capability to announce routes nor does it interact with the kernel routing table(s).
 
