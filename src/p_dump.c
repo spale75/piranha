@@ -260,8 +260,8 @@ void p_dump_add_announce4(struct peer_t *peer, int id, struct timeval *ts,
 			int i;
 			for(i=0; i<communitylen; i++)
 			{
-				opt_community.data[i].asn = *(uint16_t*)community+(i*2);
-				opt_community.data[i].num = *(uint16_t*)community+(i*2)+1;
+				opt_community.data[i].asn = *((uint16_t*)community+(i*2));
+				opt_community.data[i].num = *((uint16_t*)community+(i*2)+1);
 			}
 		}
 
@@ -270,8 +270,8 @@ void p_dump_add_announce4(struct peer_t *peer, int id, struct timeval *ts,
 			int i;
 			for(i=0; i<extcommunitylen4; i++)
 			{
-				opt_extcommunity4.data[i].type    = *(uint8_t*)extcommunity4+(i*8);
-				opt_extcommunity4.data[i].subtype = *(uint8_t*)extcommunity4+(i*8)+1;
+				opt_extcommunity4.data[i].type    = *((uint8_t*)extcommunity4+(i*8));
+				opt_extcommunity4.data[i].subtype = *((uint8_t*)extcommunity4+(i*8)+1);
 				memcpy(opt_extcommunity4.data[i].value, (uint8_t*)extcommunity4+(i*8)+2, 6);
 			}
 		}
@@ -281,9 +281,9 @@ void p_dump_add_announce4(struct peer_t *peer, int id, struct timeval *ts,
 			int i;
 			for(i=0; i<largecommunitylen; i++)
 			{
-				opt_largecommunity.data[i].global = *(uint32_t*)largecommunity+(i*12);
-				opt_largecommunity.data[i].local1 = *(uint32_t*)largecommunity+(i*12)+1;
-				opt_largecommunity.data[i].local2 = *(uint32_t*)largecommunity+(i*12)+1;
+				opt_largecommunity.data[i].global = *((uint32_t*)largecommunity+(i*12));
+				opt_largecommunity.data[i].local1 = *((uint32_t*)largecommunity+(i*12)+1);
+				opt_largecommunity.data[i].local2 = *((uint32_t*)largecommunity+(i*12)+1);
 			}
 		}
 
@@ -368,8 +368,8 @@ void p_dump_add_announce6(struct peer_t *peer, int id, struct timeval *ts,
 			int i;
 			for(i=0; i<communitylen; i++)
 			{
-				opt_community.data[i].asn = *(uint16_t*)community+(i*2);
-				opt_community.data[i].num = *(uint16_t*)community+(i*2)+1;
+				opt_community.data[i].asn = *((uint16_t*)community+(i*2));
+				opt_community.data[i].num = *((uint16_t*)community+(i*2)+1);
 			}
 		}
 
@@ -378,10 +378,10 @@ void p_dump_add_announce6(struct peer_t *peer, int id, struct timeval *ts,
 			int i;
 			for(i=0; i<extcommunitylen6; i++)
 			{
-				opt_extcommunity6.data[i].type    = *(uint8_t*)extcommunity6+(i*20);
-				opt_extcommunity6.data[i].subtype = *(uint8_t*)extcommunity6+(i*20)+1;
+				opt_extcommunity6.data[i].type    = *((uint8_t*)extcommunity6+(i*20));
+				opt_extcommunity6.data[i].subtype = *((uint8_t*)extcommunity6+(i*20)+1);
 				memcpy(opt_extcommunity6.data[i].global, (uint8_t*)extcommunity6+(i*8)+2, 16);
-				opt_extcommunity6.data[i].local = *(uint16_t*)(uint8_t*)extcommunity6+(i*8)+18;
+				opt_extcommunity6.data[i].local = *((uint16_t*)(uint8_t*)extcommunity6+(i*8)+18);
 			}
 		}
 
@@ -390,9 +390,9 @@ void p_dump_add_announce6(struct peer_t *peer, int id, struct timeval *ts,
 			int i;
 			for(i=0; i<largecommunitylen; i++)
 			{
-				opt_largecommunity.data[i].global = *(uint32_t*)largecommunity+(i*12);
-				opt_largecommunity.data[i].local1  = *(uint32_t*)largecommunity+(i*12)+1;
-				opt_largecommunity.data[i].local2  = *(uint32_t*)largecommunity+(i*12)+1;
+				opt_largecommunity.data[i].global = *((uint32_t*)largecommunity+(i*12));
+				opt_largecommunity.data[i].local1  = *((uint32_t*)largecommunity+(i*12)+1);
+				opt_largecommunity.data[i].local2  = *((uint32_t*)largecommunity+(i*12)+1);
 			}
 		}
 
