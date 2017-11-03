@@ -33,7 +33,7 @@
 
 #define P_VER_MA "1"
 #define P_VER_MI "1"
-#define P_VER_PL "2"
+#define P_VER_PL "4"
 
 #define MAX_PEERS 128
 
