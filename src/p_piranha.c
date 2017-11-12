@@ -631,11 +631,10 @@ void p_main_peer_work(char *ibuf, char *obuf, int id)
 				if ( param->type == 2 ) // BGP Capabilities
 				{
 					int i = 0;
-					struct bgp_param_capa *capa;
 
 					while(i<param->len)
 					{
-						capa = (struct bgp_param_capa*) (param->param + i);
+						struct bgp_param_capa *capa = (struct bgp_param_capa*) (param->param + i);
 
 						#ifdef DEBUG
 						int b;
@@ -1056,7 +1055,7 @@ void p_main_peer_work(char *ibuf, char *obuf, int id)
 						{
 							uint8_t plen = *(uint8_t*) (ibuf+pos+off+i);
 							uint8_t prefix6[16];
-							uint8_t blen  = ( plen % 8 ? plen / 8 + 1: plen / 8 );
+							uint8_t blen  = ( ( plen % 8 ) ? plen / 8 + 1: plen / 8 );
 
 							i++;
 
