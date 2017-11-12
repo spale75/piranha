@@ -96,7 +96,7 @@ void p_log_easytime(time_t mytime, char *timestr, int timestrlen)
 }
 
 /* update status file */
-void p_log_status(struct config_t *config, struct peer_t *peer, time_t mytime)
+void p_log_status(struct config_t *config, time_t mytime)
 {
 	char data[(MAX_PEERS*64)+256];
 	int doff = 0;
@@ -113,17 +113,21 @@ void p_log_status(struct config_t *config, struct peer_t *peer, time_t mytime)
 
 	for(a=0; a<MAX_PEERS; a++)
 	{
-		if ( peer[a].allow )
+		if ( config->peer[a].allow )
 		{
 			char timestr[1024];
 
-			p_log_easytime(mytime - peer[a].cts, timestr, sizeof(timestr));
+			p_log_easytime(mytime - config->peer[a].cts, timestr, sizeof(timestr));
 
-			if ( peer[a].status != 2 && peer[a].ucount ) { peer[a].ucount = 0; }
+			if ( config->peer[a].status != 2 && config->peer[a].ucount ) { config->peer[a].ucount = 0; }
 
 			snprintf(data+doff, sizeof(data)-doff, "| %-39s %10u %10u %10u  %7u %7s %8s |\n",
-				peer[a].af == 4 ? p_tools_ip4str(a, &peer[a].ip4) : p_tools_ip6str(a, &peer[a].ip6), peer[a].as, peer[a].rmsg,
-				peer[a].smsg, peer[a].ucount, bgp_status[peer[a].status],
+				config->peer[a].af == 4 ? p_tools_ip4str(a, &config->peer[a].ip4) : p_tools_ip6str(a, &config->peer[a].ip6),
+				config->peer[a].as,
+				config->peer[a].rmsg,
+				config->peer[a].smsg,
+				config->peer[a].ucount,
+				bgp_status[config->peer[a].status],
 				timestr );
 
 			doff = strlen(data);

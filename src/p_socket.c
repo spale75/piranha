@@ -1,6 +1,6 @@
 /*******************************************************************************/
 /*                                                                             */
-/*  Copyright 2004-2017 Pascal Gloor                                                */
+/*  Copyright 2004-2017 Pascal Gloor                                           */
 /*                                                                             */
 /*  Licensed under the Apache License, Version 2.0 (the "License");            */
 /*  you may not use this file except in compliance with the License.           */
@@ -37,7 +37,7 @@
 
 
 /*  init the listening socket */
-int p_socket_start(struct config_t *config, struct peer_t *peer)
+int p_socket_start(struct config_t *config)
 {
 	#ifdef OS_LINUX
 	int peerid;
@@ -225,72 +225,9 @@ int p_socket_start(struct config_t *config, struct peer_t *peer)
 	// TCP MD5 currently only supported on Linux
 	#ifdef OS_LINUX
 	for(peerid=0; peerid<MAX_PEERS; peerid++)
-	{
-		if ( peer[peerid].key[0] != '\0' )
-		{
-			int r;
-			struct tcp_md5sig md5;
-			memset(&md5, 0, sizeof(md5));
+		if ( config->peer[peerid].key[0] != '\0' )
+			p_socket_peer_key(config, peerid);
 
-			if ( peer[peerid].af == 4 )
-			{
-				struct sockaddr_in  paddr;
-				memset(&paddr, 0, sizeof(paddr));
-				paddr.sin_family = AF_INET;
-				memcpy(&paddr.sin_addr,   &peer[peerid].ip4, sizeof(peer[peerid].ip4));
-				memcpy(&md5.tcpm_addr, &paddr, sizeof(paddr));
-
-			}
-			else if ( peer[peerid].af == 6 )
-			{
-				struct sockaddr_in6 paddr6;
-				memset(&paddr6, 0, sizeof(paddr6));
-				paddr6.sin6_family = AF_INET6;
-				memcpy(&paddr6.sin6_addr,   &peer[peerid].ip6, sizeof(peer[peerid].ip6));
-				memcpy(&md5.tcpm_addr, &paddr6, sizeof(paddr6));
-			}
-
-			memcpy(&md5.tcpm_key, peer[peerid].key, strlen(peer[peerid].key));
-			md5.tcpm_keylen = strlen(peer[peerid].key);
-
-			if ( peer[peerid].af == 4 && config->ip4.enabled )
-			{
-
-				#ifdef DEBUG
-				printf("md5 key %s len %i addr %s\n",
-					md5.tcpm_key,
-					md5.tcpm_keylen,
-					p_tools_ip4str(peerid, &peer[peerid].ip4));
-				#endif
-
-				if ( ( r = setsockopt(config->ip4.sock, IPPROTO_TCP, TCP_MD5SIG, &md5, sizeof md5)) != 0 )
-				{
-					#ifdef DEBUG
-					printf("Activating MD5SIG failed: '%s'\n", strerror(errno));
-					#endif
-					return -1;
-				}
-			}
-			else if ( peer[peerid].af == 6 && config->ip6.enabled )
-			{
-
-				#ifdef DEBUG
-				printf("md5 key %s len %i addr %s\n",
-					md5.tcpm_key,
-					md5.tcpm_keylen,
-					p_tools_ip6str(peerid, &peer[peerid].ip6));
-				#endif
-
-				if ( ( r = setsockopt(config->ip6.sock, IPPROTO_TCP, TCP_MD5SIG, &md5, sizeof md5)) != 0 )
-				{
-					#ifdef DEBUG
-					printf("Activating MD5SIG failed: '%s'\n", strerror(errno));
-					#endif
-					return -1;
-				}
-			}
-		}
-	}
 	#endif
 
 	if ( config->ip4.enabled )
@@ -321,6 +258,87 @@ int p_socket_start(struct config_t *config, struct peer_t *peer)
 		else { printf("DEBUG: listen() ok\n"); }
 		#endif
 	}
+
+	return 0;
+}
+
+int p_socket_peer_reconfig(struct config_t *config)
+{
+	int p;
+
+	for(p=0; p<MAX_PEERS; p++)
+		if ( config->peer[p].rekey != PEER_KEY_OK ) {
+			p_socket_peer_key(config, p);
+			config->peer[p].rekey = PEER_KEY_OK;
+		}
+
+	return 0;
+}
+
+int p_socket_peer_key(struct config_t *config, int peerid)
+{
+	#ifdef OS_LINUX
+	int r;
+	struct tcp_md5sig md5;
+	memset(&md5, 0, sizeof(md5));
+
+	if ( config->peer[peerid].af == 4 )
+	{
+		struct sockaddr_in paddr;
+		memset(&paddr, 0, sizeof(paddr));
+		paddr.sin_family = AF_INET;
+		memcpy(&paddr.sin_addr,   &config->peer[peerid].ip4, sizeof(config->peer[peerid].ip4));
+		memcpy(&md5.tcpm_addr, &paddr, sizeof(paddr));
+
+	}
+	else if ( config->peer[peerid].af == 6 )
+	{
+		struct sockaddr_in6 paddr6;
+		memset(&paddr6, 0, sizeof(paddr6));
+		paddr6.sin6_family = AF_INET6;
+		memcpy(&paddr6.sin6_addr,   &config->peer[peerid].ip6, sizeof(config->peer[peerid].ip6));
+		memcpy(&md5.tcpm_addr, &paddr6, sizeof(paddr6));
+	}
+
+	memcpy(&md5.tcpm_key, config->peer[peerid].key, strlen(config->peer[peerid].key));
+	md5.tcpm_keylen = strlen(config->peer[peerid].key);
+
+	if ( config->peer[peerid].af == 4 && config->ip4.enabled )
+	{
+		#ifdef DEBUG
+		printf("md5 key %s len %i addr %s\n",
+			md5.tcpm_key,
+			md5.tcpm_keylen,
+			p_tools_ip4str(peerid, &config->peer[peerid].ip4));
+		#endif
+
+		if ( ( r = setsockopt(config->ip4.sock, IPPROTO_TCP, TCP_MD5SIG, &md5, sizeof md5)) != 0 )
+		{
+			#ifdef DEBUG
+			printf("MD5SIG failed: '%s'\n", strerror(errno));
+			#endif
+			return -1;
+		}
+	}
+	else if ( config->peer[peerid].af == 6 && config->ip6.enabled )
+	{
+
+		#ifdef DEBUG
+		printf("md5 key %s len %i addr %s\n",
+			md5.tcpm_key,
+			md5.tcpm_keylen,
+			p_tools_ip6str(peerid, &config->peer[peerid].ip6));
+		#endif
+
+		if ( ( r = setsockopt(config->ip6.sock, IPPROTO_TCP, TCP_MD5SIG, &md5, sizeof md5)) != 0 )
+		{
+			#ifdef DEBUG
+			printf("MD5SIG failed: '%s'\n", strerror(errno));
+			#endif
+			return -1;
+		}
+	}
+	#endif
 
 	return 0;
 }

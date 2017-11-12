@@ -21,4 +21,4 @@
 void p_log_pid(void);
 void p_log_add(time_t mytime, char *line);
 void p_log_easytime(time_t mytime, char *timestr, int timestrlen);
-void p_log_status(struct config_t *config, struct peer_t *peer, time_t mytime);
+void p_log_status(struct config_t *config, time_t mytime);

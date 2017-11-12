@@ -4,9 +4,13 @@
 
 ### A highly efficient, multi-threaded, BGP route collector written in C.
 
-# Patreon
+# Support
 
-Help me develop Piranha by donating at [Patreon](https://patreon.com/piranha).
+Donations are accepted at [Patreon](https://www.patreon.com/piranha)
+
+# Professional services
+
+Installation and maintenance contracts will soon be available. In the mean time, beta sites can be installed and maintained for free. Please contact [the author](mailto:pascal.gloor@spale.com) for more information.
 
 # About
 

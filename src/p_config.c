@@ -30,25 +30,33 @@
 #include <p_defs.h>
 #include <p_config.h>
 #include <p_tools.h>
+#include <p_log.h>
 
 /* reading configuration file */
 
-int p_config_load(struct config_t *config, struct peer_t *peer, uint32_t mytime)
+int p_config_load(struct config_t *config, uint32_t mytime)
 {
 	FILE *fd;
 	char line[128];
+	int isreload = config->routerid ? 1 : 0;
 
 	/* cleaning 'newallow' */
 	{
 		int a;
 		for(a=0; a<MAX_PEERS; a++)
 		{
-			peer[a].newallow = 0;
+			config->peer[a].newallow = 0;
 		}
 	}
 
-	config->uid = -1;
-	config->gid = -1;
+	if ( !isreload )
+	{
+		config->uid = -1;
+		config->gid = -1;
+	}
+
+	if ( isreload )
+		p_log_add(mytime, "Reloading configuration\n");
 
 	if ( ( fd = fopen(config->file, "r") ) == NULL )
 	{
@@ -67,7 +75,11 @@ int p_config_load(struct config_t *config, struct peer_t *peer, uint32_t mytime)
 			s = strtok(NULL, " ");
 			if ( s != NULL && strlen(s) > 0 && strlen(s) <= 16 )
 			{
-				config->routerid = ntohl(inet_addr(s));
+				if ( isreload && config->routerid != ntohl(inet_addr(s)) )
+					p_log_add(mytime, "cannot change bgp_router_id, restart required\n");
+				else
+					config->routerid = ntohl(inet_addr(s));
+
 				#ifdef DEBUG
 				printf("DEBUG: config bgp_router_id %s",s);
 				#endif
@@ -88,9 +100,17 @@ int p_config_load(struct config_t *config, struct peer_t *peer, uint32_t mytime)
 				}
 				else
 				{
-					config->uid = mypwd->pw_uid;
-					config->gid = mypwd->pw_gid;
+					if ( isreload && config->uid != mypwd->pw_uid )
+						p_log_add(mytime, "cannot change user-id, restart required\n");
+					else
+						config->uid = mypwd->pw_uid;
+
+					if ( isreload && config->gid != mypwd->pw_gid )
+						p_log_add(mytime, "cannot change group-id, restart required\n");
+					else
+						config->gid = mypwd->pw_gid;
 				}
+
 				#ifdef DEBUG
 				printf("DEBUG: config user %i/%i (uid/gid) %s\n",config->uid,config->gid,s);
 				#endif
@@ -101,7 +121,11 @@ int p_config_load(struct config_t *config, struct peer_t *peer, uint32_t mytime)
 			s = strtok(NULL, " ");
 			if ( s != NULL && strlen(s) > 0 && strlen(s) <=  6 )
 			{
-				config->as = atol(s);
+				if ( isreload && config->as != atol(s) )
+					p_log_add(mytime, "cannot change local_as, restart required\n");
+				else
+					config->as = atol(s);
+
 				#ifdef DEBUG
 				printf("DEBUG: config local_as %s",s);
 				#endif
@@ -113,7 +137,12 @@ int p_config_load(struct config_t *config, struct peer_t *peer, uint32_t mytime)
 			if ( s != NULL && strlen(s) > 0 && strlen(s) <= 6 )
 			{
 				config->ip4.listen.sin_family = AF_INET;
-				config->ip4.listen.sin_port = htons(atoi(s));
+
+				if ( isreload && config->ip4.listen.sin_port != htons(atoi(s)) )
+					p_log_add(mytime, "cannot change local_port4, restart required\n");
+				else
+					config->ip4.listen.sin_port = htons(atoi(s));
+
 				#ifdef DEBUG
 				printf("DEBUG: config local_port4 %s",s);
 				#endif
@@ -125,7 +154,12 @@ int p_config_load(struct config_t *config, struct peer_t *peer, uint32_t mytime)
 			if ( s != NULL && strlen(s) > 0 && strlen(s) <= 6 )
 			{
 				config->ip6.listen.sin6_family = AF_INET6;
-				config->ip6.listen.sin6_port = htons(atoi(s));
+
+				if ( isreload && config->ip6.listen.sin6_port != htons(atoi(s)) )
+					p_log_add(mytime, "cannot change local_port6, restart required\n");
+				else
+					config->ip6.listen.sin6_port = htons(atoi(s));
+
 				#ifdef DEBUG
 				printf("DEBUG: config local_port6 %s",s);
 				#endif
@@ -137,6 +171,7 @@ int p_config_load(struct config_t *config, struct peer_t *peer, uint32_t mytime)
 			if ( s != NULL && strlen(s) > 0 && strlen(s) <= 15 )
 			{
 				CHOMP(s);
+
 				if ( inet_pton(AF_INET, s, &config->ip4.listen.sin_addr) == 1 )
 				{
 					config->ip4.enabled=1;
@@ -265,7 +300,7 @@ int p_config_load(struct config_t *config, struct peer_t *peer, uint32_t mytime)
 						peer_key[0] = '\0';
 
 					if ( af == 4 || af == 6 )
-						p_config_add_peer(peer, af, &peer_ip4, &peer_ip6, peer_as, peer_key, mytime);
+						p_config_add_peer(config, af, &peer_ip4, &peer_ip6, peer_as, peer_key, mytime);
 
 				}
 				#ifdef DEBUG
@@ -278,21 +313,22 @@ int p_config_load(struct config_t *config, struct peer_t *peer, uint32_t mytime)
 	fclose(fd);
 
 
-	/* clearning no more allowed peers  *
+	/* clearing no more allowed peers  *
 	 * and set session type (eBGP/iBGP) */
 	{
 		int a;
 		for(a=0; a<MAX_PEERS; a++)
 		{
-			if ( peer[a].as == config->as )
-				peer[a].type = BGP_TYPE_IBGP;
+			if ( config->peer[a].as == config->as )
+				config->peer[a].type = BGP_TYPE_IBGP;
 			else
-				peer[a].type = BGP_TYPE_EBGP;
+				config->peer[a].type = BGP_TYPE_EBGP;
 
-			if ( peer[a].newallow == 0 )
+			if ( config->peer[a].newallow == 0 )
 			{
-				peer[a].status = 0;
-				peer[a].allow  = 0;
+				config->peer[a].status = 0;
+				config->peer[a].allow  = 0;
+				config->peer[a].rekey  = config->peer[a].key[0]=='\0' ? PEER_KEY_OK : PEER_KEY_DEL;
 			}
 		}
 	}
@@ -320,7 +356,8 @@ int p_config_load(struct config_t *config, struct peer_t *peer, uint32_t mytime)
 }
 
 /* add, update of peers */
-void p_config_add_peer(struct peer_t *peer, uint8_t af, struct in_addr *ip4, struct in6_addr *ip6, uint32_t as, char *key, uint32_t mytime)
+void p_config_add_peer(struct config_t *config,
+	uint8_t af, struct in_addr *ip4, struct in6_addr *ip6, uint32_t as, char *key, uint32_t mytime)
 {
 	int a;
 	if ( as == 0 )
@@ -334,26 +371,27 @@ void p_config_add_peer(struct peer_t *peer, uint8_t af, struct in_addr *ip4, str
 
 	for(a = 0; a<MAX_PEERS; a++)
 	{
-		if ( peer[a].af == af )
+		if ( config->peer[a].af == af )
 		{
 			if (
-				( af == 4 && p_tools_sameip4(ip4, &peer[a].ip4) && peer[a].allow == 1 ) ||
-				( af == 6 && p_tools_sameip6(ip6, &peer[a].ip6) && peer[a].allow == 1 )
+				( af == 4 && p_tools_sameip4(ip4, &config->peer[a].ip4) && config->peer[a].allow == 1 ) ||
+				( af == 6 && p_tools_sameip6(ip6, &config->peer[a].ip6) && config->peer[a].allow == 1 )
 			) {
 			
-				if ( peer[a].as != as )
+				if ( config->peer[a].as != as )
 				{
-					peer[a].as     = as;
-					peer[a].cts    = mytime;
-					peer[a].status = 0;
+					config->peer[a].as     = as;
+					config->peer[a].cts    = mytime;
+					config->peer[a].status = 0;
 				}
-				if ( strcmp(peer[a].key, key) != 0 )
+				if ( strcmp(config->peer[a].key, key) != 0 )
 				{
-					strcpy(peer[a].key, key);
-					peer[a].cts    = mytime;
-					peer[a].status = 0;
+					config->peer[a].rekey = key[0]=='\0' ? PEER_KEY_DEL : PEER_KEY_MOD;
+					strcpy(config->peer[a].key, key);
+					config->peer[a].cts    = mytime;
+					config->peer[a].status = 0;
 				}
-				peer[a].newallow = 1;
+				config->peer[a].newallow = 1;
 				return;
 			}
 		}
@@ -361,21 +399,22 @@ void p_config_add_peer(struct peer_t *peer, uint8_t af, struct in_addr *ip4, str
 
 	for(a = 0; a<MAX_PEERS; a++)
 	{
-		if ( peer[a].allow == 0 )
+		if ( config->peer[a].allow == 0 )
 		{
 			if ( af == 4 )
-				memcpy(&peer[a].ip4, ip4, sizeof(*ip4) );
+				memcpy(&config->peer[a].ip4, ip4, sizeof(*ip4) );
 			else
-				memcpy(&peer[a].ip6, ip6, sizeof(*ip6) );
+				memcpy(&config->peer[a].ip6, ip6, sizeof(*ip6) );
 
-			peer[a].af       = af;
-			peer[a].as       = as;
-			peer[a].allow    = 1;
-			peer[a].newallow = 1;
-			peer[a].status   = 0;
-			peer[a].sock     = 0;
-			peer[a].cts      = mytime;
-			strcpy(peer[a].key, key);
+			config->peer[a].af       = af;
+			config->peer[a].as       = as;
+			config->peer[a].allow    = 1;
+			config->peer[a].newallow = 1;
+			config->peer[a].status   = 0;
+			config->peer[a].sock     = 0;
+			config->peer[a].cts      = mytime;
+			config->peer[a].rekey    = key[0]=='\0' ? PEER_KEY_OK : PEER_KEY_ADD;
+			strcpy(config->peer[a].key, key);
 			return;
 		}
 	}

@@ -33,9 +33,9 @@
 
 #define P_VER_MA "1"
 #define P_VER_MI "1"
-#define P_VER_PL "4"
+#define P_VER_PL "5"
 
-#define MAX_PEERS 128
+#define MAX_PEERS 512
 
 #ifndef DUMPINTERVAL
 #define DUMPINTERVAL 60
@@ -105,6 +105,11 @@
 
 #define BGP_TYPE_IBGP	0
 #define BGP_TYPE_EBGP	1
+
+#define PEER_KEY_OK  0
+#define PEER_KEY_ADD 1
+#define PEER_KEY_DEL 2
+#define PEER_KEY_MOD 3
 
 #define EXPORT_ORIGIN         0x01
 #define EXPORT_ASPATH         0x02
@@ -367,6 +372,37 @@ struct dump_file_ctx
 
 
 
+struct peer_t
+{
+	uint8_t  allow;
+	uint8_t  newallow;         /* to avoid peer drop during reconfiguration */
+	uint8_t  status;           /* 0 offline, 1 connected, 2 authed */
+	uint8_t  type;             /* iBGP/eBGP */
+	uint32_t ucount;           /* bgp updates count */
+	union {
+		struct   in6_addr ip6;     /* peer IPv4 address */
+		struct   in_addr  ip4;     /* peer IPv6 address */
+	};
+	uint8_t  af;               /* indicates wether peer is v4 or v6 */
+	uint32_t as;               /* ASN */
+	char     key[MAX_KEY_LEN]; /* MD5 authentication, null terminated */
+	int      rekey;            /* key add, modify, delete */
+	uint32_t rmsg;
+	uint32_t smsg;
+	uint64_t cts;
+	uint64_t rts;
+	uint64_t sts;
+	uint16_t rhold;
+	uint16_t shold;
+	uint8_t  as4;              /* neighbor 4 bytes AS advertised capability support. */
+	FILE     *fh;
+	uint8_t  empty;
+	char     filename[1024];
+	uint64_t filets;
+	int      ilen;
+	int      olen;
+	int      sock;
+};
 
 struct config_t
 {
@@ -387,38 +423,8 @@ struct config_t
 	uid_t    uid;
 	gid_t    gid;
 	char     *file;
-	struct peer_t *peer;
+	struct peer_t peer[MAX_PEERS];
 };
 
-struct peer_t
-{
-	uint8_t  allow;
-	uint8_t  newallow;         /* to avoid peer drop during reconfiguration */
-	uint8_t  status;           /* 0 offline, 1 connected, 2 authed */
-	uint8_t  type;             /* iBGP/eBGP */
-	uint32_t ucount;           /* bgp updates count */
-	union {
-		struct   in6_addr ip6;     /* peer IPv4 address */
-		struct   in_addr  ip4;     /* peer IPv6 address */
-	};
-	uint8_t  af;               /* indicates wether peer is v4 or v6 */
-	uint32_t as;               /* ASN */
-	char     key[MAX_KEY_LEN]; /* MD5 authentication, null terminated */
-	uint32_t rmsg;
-	uint32_t smsg;
-	uint64_t cts;
-	uint64_t rts;
-	uint64_t sts;
-	uint16_t rhold;
-	uint16_t shold;
-	uint8_t  as4;              /* neighbor 4 bytes AS advertised capability support. */
-	FILE     *fh;
-	uint8_t  empty;
-	char     filename[1024];
-	uint64_t filets;
-	int      ilen;
-	int      olen;
-	int      sock;
-};
 
 #endif

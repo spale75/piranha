@@ -47,7 +47,6 @@
 
 /* init the global structures */
 struct config_t config;
-struct peer_t   peer[MAX_PEERS];
 struct timeval  ts;
 
 
@@ -79,7 +78,7 @@ int main(int argc, char *argv[])
 	/* init some stuff and load the config */
 	config.file = argv[1];
 
-	if ( p_config_load((struct config_t*)&config,(struct peer_t*)peer, (time_t)ts.tv_sec) == -1 )
+	if ( p_config_load(&config, (time_t)ts.tv_sec) == -1 )
 	{ fprintf(stderr,"error while parsing configuration file %s\n", config.file); return -1; }
 
 	/* chown working dir */
@@ -89,7 +88,7 @@ int main(int argc, char *argv[])
 	signal(SIGHUP, p_main_sighup);
 
 	/* init the socket */
-	if ( p_socket_start((struct config_t*)&config, (struct peer_t*)&peer) == -1 )
+	if ( p_socket_start(&config) == -1 )
 	{
 		fprintf(stderr,"socket error, aborting\n");
 	 	return -1;
@@ -115,7 +114,7 @@ int main(int argc, char *argv[])
 		/* therefor we sleep a bit here. */
 		usleep(100000);
 
-		p_log_status((struct config_t*)&config,(struct peer_t*)peer, (time_t)ts.tv_sec);
+		p_log_status(&config, (time_t)ts.tv_sec);
 
 		/* we update a global var with the actual timestamp */
 		gettimeofday(&ts,NULL);
@@ -156,6 +155,7 @@ void *p_main_peer(void *data)
 	int a;
 	int allow = 0;
 	int peerid = -1;
+	struct peer_t *peer = config.peer;
 	struct sockaddr_storage sockaddr;
 	struct sockaddr_in  *addr4 = (struct sockaddr_in  *)&sockaddr;
 	struct sockaddr_in6 *addr6 = (struct sockaddr_in6 *)&sockaddr;
@@ -281,6 +281,7 @@ void p_main_peer_loop(int id)
 	char *obuf;
 	uint8_t marker[16];
 	struct timeval msgtime;
+	struct peer_t *peer = config.peer;
 
 	{ int a; for(a=0; a<sizeof(marker); a++) { marker[a] = 0xff; } }
 
@@ -413,6 +414,7 @@ void p_main_peer_loop(int id)
 void p_main_peer_open(int id, char *obuf)
 {
 	/* reply with my open msg */
+	struct peer_t *peer = config.peer;
 	struct bgp_header r_header;
 	struct bgp_open   r_open;
 	struct bgp_param  r_param;
@@ -499,6 +501,7 @@ void p_main_peer_open(int id, char *obuf)
 /* bgp decoding stuff */
 void p_main_peer_work(char *ibuf, char *obuf, int id)
 {
+	struct peer_t *peer = config.peer;
 	char logline[100];
 	uint8_t marker[16] = {	0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
 				0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff };
@@ -1307,6 +1310,8 @@ void p_main_peer_work(char *ibuf, char *obuf, int id)
 /* send() */
 void p_main_peer_send(int id, char *obuf)
 {
+	struct peer_t *peer = config.peer;
+
 	/* sending datas */
 	if ( peer[id].olen > 0 )
 	{
@@ -1381,7 +1386,7 @@ void p_main_syntax(char *prog)
 /* kill -HUP for config reload */
 void p_main_sighup(int sig)
 {
-	if ( p_config_load((struct config_t*)&config,(struct peer_t*)peer, (time_t)ts.tv_sec) == -1 )
+	if ( p_config_load((struct config_t*)&config,(time_t)ts.tv_sec) == -1 )
 	{
 		#ifdef DEBUG
 		printf("failed to reload config!\n");
@@ -1391,11 +1396,8 @@ void p_main_sighup(int sig)
 		exit(1);
 	}
 
-	if ( p_socket_start((struct config_t*)&config, (struct peer_t*)peer) == -1 )
-	{
-		p_log_add((time_t)ts.tv_sec, "socket error, aborting\n");
-		exit(1);
-	}
+	if ( p_socket_peer_reconfig(&config) == -1 )
+		p_log_add((time_t)ts.tv_sec, "peer reconfig error\n");
 
 	p_log_add((time_t)ts.tv_sec, "configuration reloaded\n");
 	signal(sig,p_main_sighup);

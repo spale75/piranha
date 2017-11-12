@@ -17,5 +17,7 @@
 /*******************************************************************************/
 
 
-int p_socket_start(struct config_t *config, struct peer_t *peer);
+int p_socket_start(struct config_t *config);
 int p_socket_accept(struct config_t *config);
+int p_socket_peer_reconfig(struct config_t *config);
+int p_socket_peer_key(struct config_t *config, int peerid);
