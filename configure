@@ -10,7 +10,7 @@ CONFIG=".config.mk"
 
 find_exec()
 {
-	EXE=`which $1 2>/dev/null`
+	EXE=`which $1 2>/dev/null || true`
 }
 
 usage()
@@ -87,7 +87,7 @@ detect_os()
 
 	if [ -z "$CC" ]
 	then
-		printf "ERROR: Failed to locate gcc/ccn\n"
+		printf "ERROR: Failed to locate gcc/cc\n"
 		exit 1;
 	fi
 }
