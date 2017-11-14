@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/sh -e
 
 # /*******************************************************************************/
 # /*                                                                             */
@@ -36,13 +36,15 @@ start)
 		if [ -r ${CONFIG} ]
 		then
 			test -r "${DUMP}" && find "${DUMP}/" -depth -mindepth 1 -delete
-			${PIRANHA} ${CONFIG} && echo "ok";
+			${PIRANHA} ${CONFIG} && echo "ok"
 		else
 			echo "piranha fatal error, cannot find ${CONFIG}";
+			exit 1;
 		fi
 		
 	else
 		echo "piranha fatal error cannot exec ${PIRANHA}";
+		exit 1;
 	fi
 	;;
 
@@ -57,10 +59,12 @@ stop)
 			kill -9 ${PID} && echo "ok";
 		else
 			echo "piranha fatal error invalid PID '${PID}'";
+			exit 1;
 		fi
 		rm -f ${PIDFILE};
 	else
 		echo "piranha fatal error cannot find pid file ${PIDFILE}";
+		exit 1;
 	fi
 	;;
 
@@ -78,9 +82,11 @@ reload)
 			kill -1 ${PID} && echo "ok";
 		else
 			echo "piranha fatal error invalid PID '${PID}'";
+			exit 1;
 		fi
 	else
 		echo "piranha fatal error cannot find pid file ${PIDFILE}";
+		exit 1;
 	fi
 	;;
 
@@ -104,11 +110,11 @@ status)
 	;;
 
 show)
-	$0 status > /dev/null && cat ${PEERSFILE} || echo "piranha is not running";
+	$0 status > /dev/null && cat ${PEERSFILE} || { echo "piranha is not running"; exit 1; }
 	;;
 
 restart)
-	$0 stop;
+	$0 stop || true;
 	$0 start;
 	;;
 
