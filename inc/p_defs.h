@@ -24,6 +24,10 @@
 
 #include <p_endian.h>
 
+#ifdef OS_NETBSD
+#include <unistring/cdefs.h>
+#endif
+
 #ifndef PIRANHA_DEFS
 #define PIRANHA_DEFS
 
