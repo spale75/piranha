@@ -390,9 +390,9 @@ void p_dump_add_announce6(struct peer_t *peer, int id, struct timeval *ts,
 			int i;
 			for(i=0; i<largecommunitylen; i++)
 			{
-				opt_largecommunity.data[i].global = *((uint32_t*)largecommunity+(i*12));
-				opt_largecommunity.data[i].local1  = *((uint32_t*)largecommunity+(i*12)+1);
-				opt_largecommunity.data[i].local2  = *((uint32_t*)largecommunity+(i*12)+1);
+				opt_largecommunity.data[i].global = *((uint32_t*)largecommunity+(i*3));
+				opt_largecommunity.data[i].local1  = *((uint32_t*)largecommunity+(i*3)+1);
+				opt_largecommunity.data[i].local2  = *((uint32_t*)largecommunity+(i*3)+2);
 			}
 		}
 
